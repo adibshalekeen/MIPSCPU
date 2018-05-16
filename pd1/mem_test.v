@@ -4,7 +4,8 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
     wire [31:0] data_out;
     reg rw, enable, read_back;
     reg clock = 1;
-
+    reg write_new = 1;
+    integer base_addr = 'h0;
     reg [31:0] local_mem [1000 : 0];
     
     integer counter = 0;
@@ -32,10 +33,10 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
 
         //large scale binary loading test
         enable = 1;
-        rw = 0;   
         read_back = 0;     
-        addr = 32'h0;
         $readmemh("mips-benchmarks/add.x", local_mem);
+        addr = base_addr;
+        rw = 0;   
         #1000  $finish;
     end
 
@@ -49,31 +50,41 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
     always @(posedge clock) begin
         if(~(local_mem[counter] === 32'bx)) 
         begin
-        $display("Value: %h", local_mem[counter]);
-            addr = addr + 4;
-            data_in = local_mem[counter];
-            counter = counter + 1;
+            if(~rw)
+            begin
+                if (write_new)
+                begin
+                    addr = base_addr + 4*counter;           
+                    data_in = local_mem[counter];
+                    counter = counter + 1;
+                end
+                write_new = ~write_new;
+                $display("Addr:%h, Data_in:%h, Data_out:%h, rw: %h", addr, data_in, data_out, rw);
+            end
         end
         else
         begin
-            rw = 1;
+            rw = 1; 
+            if(~read_back)
+            begin
+                counter = 0;
+                addr = base_addr;
+            end
             read_back = 1;
-            addr = 32'h0;
         end
     end
-        
-    always @(posedge clock)begin
+
+    always @(posedge clock) begin
         if(read_back)
         begin
-            addr = addr + 4;
+            addr = base_addr + 4*counter;
+            counter = counter + 1;
+            $display("Addr:%h, Data_in:%h, Data_out:%h, rw: %h", addr, data_in, data_out, rw);
         end
     end
 
     always begin
-        #2 clock = ~clock;
+        #5 clock = ~clock;
     end
 
-    always @(posedge clock) begin
-        //$display("Addr:%h, Data_in:%h, Data_out:%h", addr, data_in, data_out);
-    end
 endmodule
