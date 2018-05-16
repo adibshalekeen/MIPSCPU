@@ -21,6 +21,7 @@ assign w_data_out_32 = {memory_block[w_addr_32], memory_block[w_addr_32 + 1], me
 
 always @(posedge clock) begin
     if(en)
+    begin
         if(~rw)
         begin
             memory_block[w_addr_32 + 3] <= w_data_in_32[7:0];
@@ -28,5 +29,6 @@ always @(posedge clock) begin
             memory_block[w_addr_32 + 1] <= w_data_in_32[23:16];
             memory_block[w_addr_32] <= w_data_in_32[31:24];
         end
+    end
 end
 endmodule

@@ -2,10 +2,10 @@
 module mem_test #(parameter LOCAL_MEM_SIZE = 27);
     reg [31:0] addr, data_in;
     wire [31:0] data_out;
-    reg rw, enable;
+    reg rw, enable, read_back;
     reg clock = 1;
 
-    reg [31:0] local_mem [0:LOCAL_MEM_SIZE];
+    reg [31:0] local_mem [1000 : 0];
     
     integer counter = 0;
     initial begin
@@ -16,6 +16,8 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
         $dumpvars(0, data_out);
         $dumpvars(0, rw);
         $dumpvars(0, enable);
+        $dumpvars(0, counter);
+        $dumpvars(0, read_back);
 
      /* 
         Basic functionality test
@@ -29,12 +31,12 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
         #45 addr = 32'h08;*/
 
         //large scale binary loading test
-        
-        rw = 0;        
-        $readmemh("data.x", local_mem);
-        $display("GOT: %d", local_mem[0]);
-        #5 enable = 1;
-        #300  $finish;
+        enable = 1;
+        rw = 0;   
+        read_back = 0;     
+        addr = 32'h0;
+        $readmemh("mips-benchmarks/add.x", local_mem);
+        #1000  $finish;
     end
 
     mem mem_block(.w_data_in_32(data_in),
@@ -45,21 +47,33 @@ module mem_test #(parameter LOCAL_MEM_SIZE = 27);
     .clock(clock));
 
     always @(posedge clock) begin
-        if(~(local_mem[counter]) == 32'hx) 
+        if(~(local_mem[counter] === 32'bx)) 
         begin
-            addr = counter;
+        $display("Value: %h", local_mem[counter]);
+            addr = addr + 4;
             data_in = local_mem[counter];
-            counter = counter + 4;
+            counter = counter + 1;
         end
         else
+        begin
             rw = 1;
+            read_back = 1;
+            addr = 32'h0;
+        end
     end
         
+    always @(posedge clock)begin
+        if(read_back)
+        begin
+            addr = addr + 4;
+        end
+    end
+
     always begin
         #2 clock = ~clock;
     end
 
     always @(posedge clock) begin
-        $display("Addr:%h, Data_in:%h, Data_out:%h", addr, data_in, data_out);
+        //$display("Addr:%h, Data_in:%h, Data_out:%h", addr, data_in, data_out);
     end
 endmodule
