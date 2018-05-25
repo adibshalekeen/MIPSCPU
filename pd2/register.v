@@ -10,8 +10,8 @@ input wire[WIDTH-1:0] w_in;
 output reg[WIDTH-1:0] r_out;
 always @(posedge clock) begin
     if(reset)
-        out <= 0;
+        r_out <= 32'h0;
     else
-        out <= in;
+        r_out <= w_in;
 end
 endmodule
