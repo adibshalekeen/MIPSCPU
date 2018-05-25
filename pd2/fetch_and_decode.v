@@ -20,7 +20,6 @@ reg clock = 1;
 //test_bench vars
 reg [31:0] read_instrs [1000 : 0];
 integer counter = 0;
-reg hold = 1;
 reg writing = 1;
 
 initial begin
@@ -55,15 +54,11 @@ always @(posedge clock) begin
     begin
         if(~instr_mem_rw)
         begin
-            if(hold)
-                begin
-                    instr_mem_addr = PC - 32'h80020000;
-                    PC = PC + 4;
-                    instr_mem_data_in = read_instrs[counter];
-                    counter = counter + 1;
-                    $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
-                end
-                hold = ~hold;
+#1          instr_mem_addr = PC - 32'h80020000;
+            PC = PC + 4;
+            instr_mem_data_in = read_instrs[counter];
+            counter = counter + 1;
+            $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
         end
     end
     else
@@ -82,7 +77,7 @@ end
 always @(posedge clock) begin
     if(~writing)
     begin
-        instr_mem_addr = PC - 32'h80020000;
+     #1 instr_mem_addr = PC - 32'h80020000;
         PC = PC + 4;
         $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, w_instr_reg_out_32);
     end
