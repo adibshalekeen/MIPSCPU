@@ -27,7 +27,7 @@ wire [4:0] w_rt_5;
 wire [4:0] w_rd_5;
 wire [4:0] w_sh_5;
 wire [5:0] w_func_6;
-wire [31:0] w_decoder_instr_out;
+wire [31:0] w_decoder_instr_out_32;
 //test_bench vars
 reg [31:0] read_instrs [1000 : 0];
 integer counter = 0;
@@ -43,6 +43,19 @@ initial begin
     $dumpvars(0, PC);
     $dumpvars(0, r_instr_reg_out_32);
     $dumpvars(0, instr_mem_rw);
+    $dumpvars(0, w_alu_op);
+    $dumpvars(0, w_mem_op);
+    $dumpvars(0, w_branch_op);
+    $dumpvars(0, w_nop);
+    $dumpvars(0, w_op_type_6);
+    $dumpvars(0, w_decoder_instr_out_32);
+    $dumpvars(0, w_rs_5);
+    $dumpvars(0, w_rt_5);
+    $dumpvars(0, w_rd_5);
+    $dumpvars(0, w_sh_5);
+    $dumpvars(0, w_func_6);
+    $dumpvars(0, w_alu_imm_16);
+    $dumpvars(0, w_mem_imm_26);
 
     $readmemh("mips-benchmarks/add.x", read_instrs);
     PC = PC_BASE_ADDR;
@@ -60,7 +73,7 @@ mem instruction_memory(.w_data_in_32(instr_mem_data_in),
 
 decoder instruction_decoder(.clock(clock),
 .w_instr_32(r_instr_reg_out_32),
-.w_instr_out_32(w_decoder_instr_out),
+.w_instr_out_32(w_decoder_instr_out_32),
 .w_alu_op(w_alu_op),
 .w_mem_op(w_mem_op),
 .w_branch_op(w_branch_op),
