@@ -1,5 +1,6 @@
 `include "mem.v"
 `include "register.v"
+`include "decoder.v"
 module CPU #(parameter PC_BASE_ADDR = 32'h80020000);
 
 //PC signals
@@ -10,17 +11,28 @@ reg [31:0] instr_mem_addr, instr_mem_data_in;
 wire [31:0] instr_mem_data_out;
 reg instr_mem_rw, instr_mem_enable = 1;
 
-wire [31:0] w_instr_reg_out_32;
+wire [31:0] r_instr_reg_out_32;
 wire [31:0] w_instr_mem_reg_out;
-//instruction fetch signals
 
-
-reg clock = 1;
-
+//decoder signals
+wire w_alu_op;
+wire w_mem_op;
+wire w_branch_op;
+wire w_nop;
+wire [15:0] w_alu_imm_16;
+wire [25:0] w_mem_imm_26;
+wire [5:0] w_op_type_6;
+wire [4:0] w_rs_5;
+wire [4:0] w_rt_5;
+wire [4:0] w_rd_5;
+wire [4:0] w_sh_5;
+wire [5:0] w_func_6;
+wire [31:0] w_decoder_instr_out;
 //test_bench vars
 reg [31:0] read_instrs [1000 : 0];
 integer counter = 0;
 reg writing = 1;
+reg clock = 1;
 
 initial begin
     $dumpfile("fetch_and_decode.vcd");
@@ -29,7 +41,7 @@ initial begin
     $dumpvars(0, instr_mem_data_out);
     $dumpvars(0, instr_mem_data_in);
     $dumpvars(0, PC);
-    $dumpvars(0, w_instr_reg_out_32);
+    $dumpvars(0, r_instr_reg_out_32);
     $dumpvars(0, instr_mem_rw);
 
     $readmemh("mips-benchmarks/add.x", read_instrs);
@@ -46,7 +58,24 @@ mem instruction_memory(.w_data_in_32(instr_mem_data_in),
 .en(instr_mem_enable),
 .clock(clock));
 
-register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(instr_mem_data_out), .r_out(w_instr_reg_out_32));
+decoder instruction_decoder(.clock(clock),
+.w_instr_32(r_instr_reg_out_32),
+.w_instr_out_32(w_decoder_instr_out),
+.w_alu_op(w_alu_op),
+.w_mem_op(w_mem_op),
+.w_branch_op(w_branch_op),
+.w_nop(w_nop),
+.w_alu_imm_val_16(w_alu_imm_16),
+.w_branch_imm_val_26(w_mem_imm_26),
+.w_op_type_6(w_op_type_6),
+.w_rs_addr_5(w_rs_5),
+.w_rt_addr_5(w_rt_5),
+.w_rd_addr_5(w_rd_5),
+.w_sh_amt_5(w_sh_5),
+.w_func_6(w_func_6));
+
+register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(instr_mem_data_out), .w_out(r_instr_reg_out_32));
+
 
 //memory population loop
 always @(posedge clock) begin
@@ -79,7 +108,7 @@ always @(posedge clock) begin
     begin
      #1 instr_mem_addr = PC - 32'h80020000;
         PC = PC + 4;
-        $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, w_instr_reg_out_32);
+        $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, r_instr_reg_out_32);
     end
 end
 
