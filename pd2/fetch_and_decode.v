@@ -28,6 +28,22 @@ wire [4:0] w_rd_5;
 wire [4:0] w_sh_5;
 wire [5:0] w_func_6;
 wire [31:0] w_decoder_instr_out_32;
+
+//registered decoder output
+wire r_alu_op;
+wire r_mem_op;
+wire r_branch_op;
+wire r_nop;
+wire [5:0] r_op_type_6;
+wire [4:0] r_rs_5;
+wire [4:0] r_rt_5;
+wire [4:0] r_rd_5;
+wire [4:0] r_sh_5;
+wire [5:0] r_func_6;
+wire [15:0] r_alu_imm_16;
+wire [25:0] r_mem_imm_26;
+wire [31:0] r_decoder_instr_out_32;
+
 //test_bench vars
 reg [31:0] read_instrs [1000 : 0];
 integer counter = 0;
@@ -37,25 +53,22 @@ reg clock = 1;
 initial begin
     $dumpfile("fetch_and_decode.vcd");
     $dumpvars(0, clock);
-    $dumpvars(0, instr_mem_addr);
-    $dumpvars(0, instr_mem_data_out);
-    $dumpvars(0, instr_mem_data_in);
     $dumpvars(0, PC);
     $dumpvars(0, r_instr_reg_out_32);
     $dumpvars(0, instr_mem_rw);
-    $dumpvars(0, w_alu_op);
-    $dumpvars(0, w_mem_op);
-    $dumpvars(0, w_branch_op);
-    $dumpvars(0, w_nop);
-    $dumpvars(0, w_op_type_6);
-    $dumpvars(0, w_decoder_instr_out_32);
-    $dumpvars(0, w_rs_5);
-    $dumpvars(0, w_rt_5);
-    $dumpvars(0, w_rd_5);
-    $dumpvars(0, w_sh_5);
-    $dumpvars(0, w_func_6);
-    $dumpvars(0, w_alu_imm_16);
-    $dumpvars(0, w_mem_imm_26);
+    $dumpvars(0, r_alu_op);
+    $dumpvars(0, r_mem_op);
+    $dumpvars(0, r_branch_op);
+    $dumpvars(0, r_nop);
+    $dumpvars(0, r_op_type_6);
+    $dumpvars(0, r_decoder_instr_out_32);
+    $dumpvars(0, r_rs_5);
+    $dumpvars(0, r_rt_5);
+    $dumpvars(0, r_rd_5);
+    $dumpvars(0, r_sh_5);
+    $dumpvars(0, r_func_6);
+    $dumpvars(0, r_alu_imm_16);
+    $dumpvars(0, r_mem_imm_26);
 
     $readmemh("mips-benchmarks/add.x", read_instrs);
     PC = PC_BASE_ADDR;
@@ -89,7 +102,24 @@ decoder instruction_decoder(.clock(clock),
 
 register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(instr_mem_data_out), .w_out(r_instr_reg_out_32));
 
+//registering output of decoder
+register_sync #(1) alu_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_op), .w_out(r_alu_op));
+register_sync #(1) mem_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_op), .w_out(r_mem_op));
+register_sync #(1) branch_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_branch_op), .w_out(r_branch_op));
+register_sync #(1) nop_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_nop), .w_out(r_nop));
 
+register_sync #(6) op_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_op_type_6), .w_out(r_op_type_6));
+
+register_sync #(5) rs_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rs_5), .w_out(r_rs_5));
+register_sync #(5) rt_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rt_5), .w_out(r_rt_5));
+register_sync #(5) rd_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rd_5), .w_out(r_rd_5));
+register_sync #(5) sh_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_sh_5), .w_out(r_sh_5));
+register_sync #(6) func_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_func_6), .w_out(r_func_6));
+
+register_sync #(16) alu_imm_reg_16 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_imm_16), .w_out(r_alu_imm_16));
+register_sync #(26) mem_imm_reg_26 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_imm_26), .w_out(r_mem_imm_26));
+
+register_sync #(32) decoder_instr_output(.clock(clock), .reset(instr_reg_reset), .w_in(w_decoder_instr_out_32), .w_out(r_decoder_instr_out_32));
 //memory population loop
 always @(posedge clock) begin
     if(~(read_instrs[counter] === 32'bx))

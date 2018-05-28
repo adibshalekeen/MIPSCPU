@@ -55,6 +55,7 @@ assign w_func_6 = w_instr_32[5:0];
 assign w_alu_imm_val_16 = w_instr_32[15:0];
 assign w_branch_imm_val_26 = w_instr_32[25:0];
 assign w_instr_out_32 = w_instr_32;
+
 always @(posedge clock) begin
     w_alu_op = 0;
     w_mem_op = 0;
