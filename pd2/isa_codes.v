@@ -9,7 +9,7 @@
 `define SLTI 6'b001010
 `define SLTIU 6'b001011
 //rt <- rs or imm
-`define ORI 6'b001011
+`define ORI 6'b001101
 //rt <- rs xor imm
 `define XORI 6'b001110
 
@@ -29,7 +29,7 @@
 
 //jump opcodes
 //Jump to mem_imm || 32'b0 (branch)
-`define J 6'b000100
+`define J 6'b000010
 //Store current PC in lnk reg (GPR31) and jump to mem_imm || 32'b0
 `define JAL 6'b000011
 //Jump to PC + alu_imm if rs == rt
@@ -66,7 +66,7 @@
 `define SPECIAL_MFLO 6'b010010
 
 //rd <- rs < rt
-`define SPECIAL_SLT 6'b011010
+`define SPECIAL_SLT 6'b101010
 `define SPECIAL_SLTU 6'b101011 
 
 //rd <- rt << sa
@@ -74,7 +74,7 @@
 //rd <- rt << rs
 `define SPECIAL_SLLV 6'b000100
 //rd <- rt >> sa
-`define SPECIAL_SRL 6'b000100
+`define SPECIAL_SRL 6'b000010
 //rd <- rt >> rs
 `define SPECIAL_SRLV 6'b000110
 //rd <- rt >> sa (arithmetic)
