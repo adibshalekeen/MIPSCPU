@@ -86,7 +86,7 @@
 `define SPECIAL_AND 6'b100100
 `define SPECIAL_OR 6'b100101
 `define SPECIAL_XOR 6'b100110
-`define SPECIAL_NOR 6'100111
+`define SPECIAL_NOR 6'b100111
 
 //branch instrs
 //Store current PC in rd and jump to rs || 32'b0
