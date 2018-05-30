@@ -84,7 +84,7 @@ mem instruction_memory(.w_data_in_32(instr_mem_data_in),
 .en(instr_mem_enable),
 .clock(clock));
 
-decoder instruction_decoder(.clock(clock),
+decoder instruction_decoder(
 .w_instr_32(r_instr_reg_out_32),
 .w_instr_out_32(w_decoder_instr_out_32),
 .w_alu_op(w_alu_op),
