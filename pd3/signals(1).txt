@@ -1,0 +1,39 @@
+        BR    JP    ALUinB    ALUop   DMwe    Rwe    Rdst    Rwd    Rlhs    Rrhs
+ADD     0     0     0         1       0       1      rd       0     rs      rt
+ADDIU   0     0     1         1       0       1      rt       0     rs      imm
+ADDU    0     0     0         1       0       1      rd       0     rs      rt
+SUB     0     0     0         2       0       1      rd       0     rs      rt
+SUBU    0     0     0         2       0       1      rd       0     rs      rt
+MULT    0     0     0         3       0       0      -        0     rs      rt
+MULTU   0     0     0         3       0       0      -        0     rs      rt
+DIV     0     0     0         4       0       0      -        0     rs      rt
+DIVU    0     0     0         4       0       0      -        0     rs      rt
+SLL     0     0     0         5       0       1      rd       0     rt      sa
+SLLV    0     0     0         5       0       1      rd       0     rt      rs
+SRL     0     0     0         6       0       1      rd       0     rt      sa
+SRLV    0     0     0         6       0       1      rd       0     rt      rs
+SRA     0     0     0         7       0       1      rd       0     rt      sa
+SRAV    0     0     0         7       0       1      rd       0     rt      rs
+SLT     0     0     0         8       0       1      rd       0     rs      rt
+SLTI    0     0     1         8       0       1      rt       0     rs      imm
+SLTIU   0     0     1         8       0       1      rt       0     rs      imm
+SLTU    0     0     0         8       0       1      rs       0     rs      rt
+AND     0     0     0         9       0       1      rd       0     rs      rt
+OR      0     0     0         10      0       1      rd       0     rs      rt
+ORI     0     0     1         10      0       1      rt       0     rs      imm
+XOR     0     0     0         11      0       1      rd       0     rs      rt
+XORI    0     0     1         11      0       1      rt       0     rs      imm
+NOR     0     0     0         12      0       1      rd       0     rs      rt
+SB      0     0     0         1       1       0      -        0     rs      imm
+LW      0     0     1         1       0       1      rt       1     rs      imm
+SW      0     0     0         1       1       0      -        0     rs      imm
+LBU     0     0     1         1       0       1      rt       1     rs      imm
+BEQ     1     0     0         13      0       0      -        0     rs      rt
+BNE     1     0     0         14      0       0      -        0     rs      rt
+BGEZ    1     0     1         15      0       0      -        0     rs      imm
+BGTZ    1     0     1         16      0       0      -        0     rs      imm
+BLEZ    1     0     1         17      0       0      -        0     rs      imm
+BLTZ    1     0     1         18      0       0      -        0     rs      imm
+
+(Rwd = 1 => Data memory output is fed back to RF)
+
