@@ -34,19 +34,34 @@ wire [5:0] w_func_6;
 wire [31:0] w_decoder_instr_out_32;
 
 //registered decoder output
-wire r_alu_op;
-wire r_mem_op;
-wire r_branch_op;
-wire r_nop;
-wire [5:0] r_op_type_6;
-wire [4:0] r_rs_5;
-wire [4:0] r_rt_5;
-wire [4:0] r_rd_5;
-wire [4:0] r_sh_5;
-wire [5:0] r_func_6;
-wire [15:0] r_alu_imm_16;
-wire [25:0] r_mem_imm_26;
-wire [31:0] r_decoder_instr_out_32;
+wire r_dalu_op;
+wire r_dmem_op;
+wire r_dbranch_op;
+wire r_dnop;
+wire [5:0] r_dop_type_6;
+wire [4:0] r_drs_5;
+wire [4:0] r_drt_5;
+wire [4:0] r_drd_5;
+wire [4:0] r_dsh_5;
+wire [5:0] r_dfunc_6;
+wire [15:0] r_dalu_imm_16;
+wire [25:0] r_dmem_imm_26;
+wire [31:0] r_ddecoder_instr_out_32;
+
+//registered execution output + ctrl signal registers after register file stage
+wire r_ealu_op;
+wire r_emem_op;
+wire r_ebranch_op;
+wire r_enop;
+wire [5:0] r_eop_type_6;
+wire [4:0] r_ers_5;
+wire [4:0] r_ert_5;
+wire [4:0] r_erd_5;
+wire [4:0] r_esh_5;
+wire [5:0] r_efunc_6;
+wire [15:0] r_ealu_imm_16;
+wire [25:0] r_emem_imm_26;
+wire [31:0] r_exec_instr_out_32;
 
 //register file signals
 wire [4:0] w_reg_file_addr1_5, w_reg_file_addr2_5, w_reg_file_daddr_5;
@@ -126,30 +141,50 @@ register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(
 
 //registering output of decoder
 //op type
-register_sync #(1) alu_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_op), .w_out(r_alu_op));
-register_sync #(1) mem_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_op), .w_out(r_mem_op));
-register_sync #(1) branch_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_branch_op), .w_out(r_branch_op));
-register_sync #(1) nop_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_nop), .w_out(r_nop));
+register_sync #(1) dalu_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_op), .w_out(r_dalu_op));
+register_sync #(1) dmem_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_op), .w_out(r_dmem_op));
+register_sync #(1) dbranch_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_branch_op), .w_out(r_dbranch_op));
+register_sync #(1) dnop_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_nop), .w_out(r_nop));
 //op code
-register_sync #(6) op_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_op_type_6), .w_out(r_op_type_6));
+register_sync #(6) dop_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_op_type_6), .w_out(r_dop_type_6));
 //reg params
-register_sync #(5) rs_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rs_5), .w_out(r_rs_5));
-register_sync #(5) rt_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rt_5), .w_out(r_rt_5));
-register_sync #(5) rd_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rd_5), .w_out(r_rd_5));
-register_sync #(5) sh_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_sh_5), .w_out(r_sh_5));
-register_sync #(6) func_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_func_6), .w_out(r_func_6));
+register_sync #(5) drs_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rs_5), .w_out(r_drs_5));
+register_sync #(5) drt_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rt_5), .w_out(r_drt_5));
+register_sync #(5) drd_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_rd_5), .w_out(r_drd_5));
+register_sync #(5) dsh_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(w_sh_5), .w_out(r_dsh_5));
+register_sync #(6) dfunc_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(w_func_6), .w_out(r_dfunc_6));
 //imms
-register_sync #(16) alu_imm_reg_16 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_imm_16), .w_out(r_alu_imm_16));
-register_sync #(26) mem_imm_reg_26 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_imm_26), .w_out(r_mem_imm_26));
+register_sync #(16) dalu_imm_reg_16 (.clock(clock), .reset(instr_reg_reset), .w_in(w_alu_imm_16), .w_out(r_dalu_imm_16));
+register_sync #(26) dmem_imm_reg_26 (.clock(clock), .reset(instr_reg_reset), .w_in(w_mem_imm_26), .w_out(r_dmem_imm_26));
 //raw instr (for debugging)
-register_sync #(32) decoder_instr_output(.clock(clock), .reset(instr_reg_reset), .w_in(w_decoder_instr_out_32), .w_out(r_decoder_instr_out_32));
+register_sync #(32) ddecoder_instr_output(.clock(clock), .reset(instr_reg_reset), .w_in(w_decoder_instr_out_32), .w_out(r_decoder_instr_out_32));
+
+//registering output of execution and control signals
+//registering control signals
+//op type
+register_sync #(1) ealu_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dalu_op), .w_out(r_ealu_op));
+register_sync #(1) emem_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dmem_op), .w_out(r_emem_op));
+register_sync #(1) ebranch_op_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dbranch_op), .w_out(r_ebranch_op));
+register_sync #(1) enop_reg_1 (.clock(clock), .reset(instr_reg_reset), .w_in(w_nop), .w_out(r_nop));
+//op code
+register_sync #(6) eop_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dop_type_6), .w_out(r_eop_type_6));
+//reg params
+register_sync #(5) ers_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_drs_5), .w_out(r_ers_5));
+register_sync #(5) ert_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_drt_5), .w_out(r_ert_5));
+register_sync #(5) erd_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_drd_5), .w_out(r_erd_5));
+register_sync #(5) esh_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dsh_5), .w_out(r_esh_5));
+register_sync #(6) efunc_code_reg_6 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dfunc_6), .w_out(r_efunc_6));
+//imms
+register_sync #(16) ealu_imm_reg_16 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dalu_imm_16), .w_out(r_ealu_imm_16));
+register_sync #(26) emem_imm_reg_26 (.clock(clock), .reset(instr_reg_reset), .w_in(r_dmem_imm_26), .w_out(r_emem_imm_26));
+//raw instr (for debugging)
+register_sync #(32) edecoder_instr_output(.clock(clock), .reset(instr_reg_reset), .w_in(r_decoder_instr_out_32), .w_out(r_exec_instr_out_32));
 
 //decoder -> regfile wiring
 assign w_reg_file_addr1_5 = r_rs_5;
 assign w_reg_file_addr2_5 = r_rt_5;
-//for now control this manually through tb since it needs to be muxed via later stages
-assign w_reg_file_daddr_5 = w_tb_reg_file_daddr_5;
-assign w_reg_file_dval_32 = w_tb_reg_file_d_32;
+//for now control this manually through tb since it needs to be muxed via writeback
+
 
 //memory population loop
 always @(posedge clock) begin
