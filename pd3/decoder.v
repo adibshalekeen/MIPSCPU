@@ -2,7 +2,9 @@
 module decoder(
     w_instr_32,
     w_instr_out_32,
-    w_alu_op,
+    w_unsigned_op,
+    w_imm_op,
+    w_shift_op,
     w_alu_imm_val_16,
     w_mem_op,
     w_branch_op,
@@ -20,7 +22,9 @@ input wire [31:0] w_instr_32;
 output wire [31:0] w_instr_out_32;
 
 //alu control signals
-output reg w_alu_op;
+output reg w_unsigned_op;
+output reg w_imm_op;
+output reg w_shift_op;
 output wire [15:0] w_alu_imm_val_16;
 
 //memory control signals
@@ -55,42 +59,110 @@ assign w_branch_imm_val_26 = w_instr_32[25:0];
 assign w_instr_out_32 = w_instr_32;
 
 always @(*) begin
-    w_alu_op = 0;
-    w_mem_op = 0;
-    w_branch_op = 0;
-    w_nop = 0;
     case(op_code)
         `SPECIAL:
         begin
-            if(w_func_6 === `SPECIAL_JALR || w_func_6 === `SPECIAL_JR)
-                w_mem_op = 1;
-            else if (w_func_6 === `SPECIAL_NOP)
-                w_nop = 1;
-            else
-                w_alu_op = 1;
+            case(w_func_6)
+            `SPECIAL_JALR, `SPECIAL_JR:
+                begin
+                    w_unsigned_op = 0;
+                    w_imm_op = 0;
+                    w_shift_op = 0;
+                    w_mem_op = 0;
+                    w_branch_op = 1;
+                    w_nop = 0;
+                end
+            `SPECIAL_ADDU, `SPECIAL_SUBU, `SPECIAL_MULTU, `SPECIAL_DIVU, `SPECIAL_SLTU:
+                begin
+                    w_unsigned_op = 1;
+                    w_imm_op = 0;
+                    w_mem_op = 0;
+                    w_shift_op = 0;
+                    w_branch_op = 0;
+                    w_nop = 0;
+                end
+            `SPECIAL_ADD, `SPECIAL_SUB, `SPECIAL_MULT, `SPECIAL_DIV, `SPECIAL_SLT:
+                begin
+                    w_unsigned_op = 0;
+                    w_imm_op = 0;
+                    w_shift_op = 0;
+                    w_mem_op = 0;
+                    w_branch_op = 0;
+                    w_nop = 0;
+                end
+            `SPECIAL_SLL, `SPECIAL_SRL, `SPECIAL_SRA:
+                begin
+                    w_unsigned_op = 0;
+                    w_imm_op = 1;
+                    w_shift_op = 1;
+                    w_mem_op = 0;
+                    w_branch_op = 0;
+                    w_nop = 0;
+                end
+            `SPECIAL_SLLV, `SPECIAL_SRLV, `SPECIAL_SRAV:
+                begin
+                    w_unsigned_op = 0;
+                    w_imm_op = 0;
+                    w_shift_op = 1;
+                    w_mem_op = 0;
+                    w_branch_op = 0;
+                    w_nop = 0;
+                end
+            default:
+                begin
+                    w_unsigned_op = 0;
+                    w_imm_op = 0;
+                    w_mem_op = 0;
+                    w_branch_op = 0;
+                    w_nop = 1;
+                end
+            endcase
             w_op_type_6 = w_func_6;
         end
         `ADDIU, `SLTI, `SLTIU, `ORI, `XORI:
         begin
-            w_alu_op = 1;
+            if(op_code === `ADDIU | op_code === `SLTIU)
+                w_unsigned_op = 1;
+            else
+                w_unsigned_op = 0;
+            w_imm_op = 1;
+            w_shift_op = 0;
+            w_mem_op = 0;
+            w_branch_op = 0;
+            w_nop = 0;
             w_op_type_6 = op_code;
         end
         `LW, `SW, `LUI, `LB, `LBU, `SB:
         begin
+            w_unsigned_op = 0;
+            w_imm_op = 1;
+            w_shift_op = 0;
             w_mem_op = 1;
+            w_branch_op = 0;
+            w_nop = 0;
             w_op_type_6 = op_code;
         end
         `J, `JAL, `BEQ, `BNE, `BGTZ, `BLEZ:
         begin
+            w_unsigned_op = 0;
+            w_imm_op = 0;
+            w_shift_op = 0;
+            w_mem_op = 0;
             w_branch_op = 1;
+            w_nop = 0;
             w_op_type_6 = op_code;
         end
         `REGIMM:
         begin
             if(w_rt_addr_5 === `BGEZ || w_rt_addr_5 === `BLTZ)
             begin
+                w_unsigned_op = 0;
+                w_imm_op = 0;
+                w_mem_op = 0;
+                w_shift_op = 0;
                 w_branch_op = 1;
-                w_op_type_6 = w_rt_addr_5 << 1;
+                w_nop = 0;
+                w_op_type_6 = {1'b0, w_rt_addr_5};
             end
             else
                 w_nop = 1;

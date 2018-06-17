@@ -1,4 +1,4 @@
-module 221_mux(# WIDTH=5)(
+module mux_221 #(parameter WIDTH=5)(
     w_input0_x,
     w_input1_x,
     w_out_x,
@@ -14,7 +14,6 @@ always @(w_ctrl) begin
         w_out_x = w_input1_x;
     else
         w_out_x = w_input0_x;
-  endcase
 end
 
 endmodule
