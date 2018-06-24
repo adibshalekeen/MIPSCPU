@@ -3,14 +3,22 @@ module ALU #(parameter WIDTH = 32)(
     w_op_code_6,
     w_input1_x,
     w_input2_x,
+    w_output_condition,
     w_output_x
 );
 input wire [5:0] w_op_code_6;
 input wire [WIDTH-1:0] w_input1_x, w_input2_x;
 output reg [WIDTH-1:0] w_output_x;
+output reg w_output_condition = 0;
 
 reg signed[WIDTH-1:0] temp_signedi1;
 reg signed[WIDTH-1:0] temp_signedi2;
+
+reg signed[2*WIDTH:0] long_temp_signed;
+reg [2*WIDTH:0] long_temp_unsigned;
+
+reg [31:0] HI = 0;
+reg [31:0] LO = 0;
 
 wire BEQ, BNE, BGTZ, BLEZ, BGEZ, BLTZ;
 
@@ -26,55 +34,157 @@ always @(*) begin
         temp_signedi2 = w_input2_x;      
         case(w_op_code_6)
         `SPECIAL_ADD:
+                begin
                 w_output_x = temp_signedi1 + temp_signedi2;
+                w_output_condition = 0;
+                end
         `LW, `SW, `LUI, `LB, `LBU, `SB:
+                begin
                 w_output_x = w_input1_x + temp_signedi2;
+                w_output_condition = 0;
+                end
         `SPECIAL_ADDU, `ADDIU:
+                begin
                 w_output_x = w_input1_x + w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_SUB:
+                begin
                 w_output_x = temp_signedi1 - temp_signedi2;
+                w_output_condition = 0;
+                end
         `SPECIAL_SUBU:
+                begin
                 w_output_x = w_input1_x - w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_MULT:
-                w_output_x = temp_signedi1 * temp_signedi2;
+                begin
+                long_temp_signed = temp_signedi1 * temp_signedi2;
+                HI = long_temp_signed[(2*WIDTH - 1):WIDTH];
+                LO = long_temp_signed[(WIDTH - 1):0];
+                w_output_x = 32'bX;
+                w_output_condition = 0;
+                end
         `SPECIAL_MULTU:
-                w_output_x = w_input1_x * w_input2_x;
+                begin
+                long_temp_unsigned = w_input1_x * w_input2_x;
+                HI = long_temp_unsigned[(2*WIDTH - 1):WIDTH];
+                LO = long_temp_unsigned[(WIDTH - 1):0];
+                w_output_x = 32'bX;
+                w_output_condition = 0;
+                end
         `SPECIAL_DIV:
-                w_output_x = temp_signedi1 / temp_signedi2;
+                begin
+                long_temp_signed = temp_signedi1 / temp_signedi2;
+                HI = long_temp_signed[(2*WIDTH - 1):WIDTH];
+                LO = long_temp_signed[(WIDTH - 1):0];
+                w_output_x = 32'bX;
+                w_output_condition = 0;
+                end
         `SPECIAL_DIVU:
-                w_output_x = w_input1_x / w_input2_x;
+                begin
+                long_temp_unsigned = w_input1_x / w_input2_x;
+                HI = long_temp_unsigned[(2*WIDTH - 1):WIDTH];
+                LO = long_temp_unsigned[(WIDTH - 1):0];
+                w_output_x = 32'bX;
+                w_output_condition = 0;
+                end
+        `SPECIAL_MFHI:
+                begin
+                w_output_x = HI;
+                w_output_condition = 0;
+                end
+        `SPECIAL_MFLO:
+                begin
+                w_output_x = LO;
+                w_output_condition = 0;
+                end
         `SPECIAL_SLT, `SLTI:
+                begin
                 w_output_x = temp_signedi1 < temp_signedi2;
+                w_output_condition = 0;
+                end
         `SPECIAL_SLTU, `SLTIU:
+                begin
                 w_output_x = w_input1_x < w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_SLL, `SPECIAL_SLLV:
+                begin
                 w_output_x = temp_signedi1 << w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_SRL, `SPECIAL_SRLV:
+                begin
                 w_output_x = temp_signedi1 >> w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_SRA, `SPECIAL_SRAV:
+                begin
                 w_output_x = temp_signedi1 <<< w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_OR, `ORI:
+                begin
                 w_output_x = w_input1_x | w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_XOR, `XORI:
+                begin
                 w_output_x = w_input1_x ^ w_input2_x;
+                w_output_condition = 0;
+                end
         `SPECIAL_NOR:
+                begin
                 w_output_x = !(w_input1_x | w_input2_x); 
+                w_output_condition = 0;
+                end
         `SPECIAL_AND:
+                begin
                 w_output_x = w_input1_x & w_input2_x;
+                w_output_condition = 0;
+                end
         `BEQ:
-                w_output_x = BEQ;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BEQ;
+                end
         `BNE:
-                w_output_x = BNE;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BNE;
+                end
         `BGTZ:
-                w_output_x = BGTZ;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BGTZ;
+                end
         `BGEZ:
-                w_output_x = BGEZ;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BGEZ;
+                end
         `BLTZ:
-                w_output_x = BLTZ;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BLTZ;
+                end
         `BLEZ:
-                w_output_x = BLEZ;
+                begin
+                w_output_x = 32'bX;
+                w_output_condition = BLEZ;
+                end
         `SPECIAL_NOP:
+                begin
                 w_output_x = 32'hFFFFFFFF;
+                w_output_condition = 0;
+                end
+        default:
+                begin
+                w_output_x = 32'hXXXXXXXX;
+                w_output_condition = 0;
+                end
         endcase
 end
 endmodule

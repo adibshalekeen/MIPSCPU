@@ -17,7 +17,7 @@ SRAV    0     0     0         7       0       1      rd       0     rt      rs
 SLT     0     0     0         8       0       1      rd       0     rs      rt
 SLTI    0     0     1         8       0       1      rt       0     rs      imm
 SLTIU   0     0     1         8       0       1      rt       0     rs      imm
-SLTU    0     0     0         8       0       1      rs       0     rs      rt
+SLTU    0     0     0         8       0       1      rd       0     rs      rt
 AND     0     0     0         9       0       1      rd       0     rs      rt
 OR      0     0     0         10      0       1      rd       0     rs      rt
 ORI     0     0     1         10      0       1      rt       0     rs      imm
