@@ -18,6 +18,7 @@ module CPU #(parameter PC_BASE_ADDR = 32'h80020000);
 //PC signals
 reg [31:0] MANUAL_PC = PC_BASE_ADDR;
 wire [31:0] PC = PC_BASE_ADDR;
+reg MANUAL_PC_CTRL = 1;
 wire [31:0] r_PC;
 
 //instruction memory signals
@@ -170,7 +171,6 @@ initial begin
 
     $readmemh("mips-benchmarks/add.x", read_instrs);
     instr_mem_rw = 0;
-    instr_mem_enable = 1;
     #1000 $finish;
 end
 
@@ -346,6 +346,9 @@ register_sync #(32) mdecoder_instr_output(.clock(clock), .reset(instr_reg_reset)
 
 
 *****************************************************************************************************************/
+//pc register
+pc_register #(32) PC_REGISTER (.clock(clock), .reset(MANUAL_PC_CTRL), .w_in(PC), .w_out(r_PC));
+
 //ALU input wiring
 alu_input_ctrlr alu_in_ctrl (
     .w_imm_op(r_dimm_op),
@@ -369,7 +372,7 @@ branch_ctrlr branch_ctrl(
     .w_jump_op(r_ejump_op),
     .w_imm_op(r_eimm_op),
     .w_br_pc_in_32(r_epc),
-    .w_pc_32(PC),
+    .w_pc_32(r_PC),
     .w_alu_imm_32(r_ealu_imm_sgn_ext_32),
     .w_br_imm_26(r_ebr_imm_26),
     .w_reg_pc_32(r_ert_data_32),
@@ -403,7 +406,7 @@ always @(posedge clock) begin
     begin
         if(~instr_mem_rw)
         begin
-#1          instr_mem_addr = PC - 32'h80020000;
+#1          instr_mem_addr = MANUAL_PC - 32'h80020000;
             MANUAL_PC = MANUAL_PC + 4;
             instr_mem_data_in = read_instrs[counter];
             counter = counter + 1;
@@ -414,7 +417,7 @@ always @(posedge clock) begin
         begin
             if(writing)
                 begin
-                    MANUAL_PC = PC_BASE_ADDR;
+                    MANUAL_PC_CTRL = 0;
                     writing = 0;
                     instr_mem_rw = 1;
                     $display("Resetting... PC:%h", PC);
@@ -426,8 +429,7 @@ end
 always @(posedge clock) begin
     if(~writing)
     begin
-     #1 instr_mem_addr = MANUAL_PC - 32'h80020000;
-        MANUAL_PC = MANUAL_PC + 4;
+     #1 instr_mem_addr = r_PC - 32'h80020000;
         $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, r_instr_reg_out_32);
     end
 end
