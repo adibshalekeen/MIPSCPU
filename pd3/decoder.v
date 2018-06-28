@@ -110,7 +110,7 @@ always @(*) begin
                     w_jump_op = 0;
                     w_nop = 0;
                 end
-            `SPECIAL_SLL, `SPECIAL_SRL, `SPECIAL_SRA:
+                `SPECIAL_SRL, `SPECIAL_SRA:
                 begin
                     w_alu_op = 1;
                     w_unsigned_op = 0;
@@ -138,7 +138,16 @@ always @(*) begin
                 end
             default:
                 begin
-                    w_alu_op = 0;
+                    if(w_func_6 === `SPECIAL_SLL & w_sh_amt_5 > 0)
+                        begin
+                            w_alu_op = 1;
+                            w_nop = 0;
+                        end
+                    else
+                        begin
+                            w_alu_op = 0;
+                            w_nop = 1;
+                        end
                     w_unsigned_op = 0;
                     w_imm_op = 0;
                     w_byte_op = 0;
@@ -147,7 +156,6 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
-                    w_nop = 1;
                 end
             endcase
             w_op_type_6 = w_func_6;
@@ -173,7 +181,9 @@ always @(*) begin
         begin
             w_alu_op = 0;
             if(op_code ===`LBU)
-            w_unsigned_op = 0;
+                w_unsigned_op = 1;
+            else
+                w_unsigned_op = 0;
             w_imm_op = 1;
             if(op_code === `LB | op_code === `LBU | op_code === `SB)
                 w_byte_op = 1;

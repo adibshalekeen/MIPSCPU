@@ -30,6 +30,9 @@ always @(posedge clock) begin
     if(reset)
         w_out <= 32'h80020000;
     else
+    begin
         w_out <= w_in;
+    end
+    //$display("Register: PC_out:%h, PC_in:%h", w_out, w_in);
 end
 endmodule

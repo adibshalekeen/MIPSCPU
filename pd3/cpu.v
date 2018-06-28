@@ -17,9 +17,12 @@ module CPU #(parameter PC_BASE_ADDR = 32'h80020000);
 
 //PC signals
 reg [31:0] MANUAL_PC = PC_BASE_ADDR;
-wire [31:0] PC = PC_BASE_ADDR;
+wire [31:0] PC;
+wire [31:0] input_r_PC;
+assign input_r_PC = r_PC;
 reg MANUAL_PC_CTRL = 1;
-wire [31:0] r_PC;
+reg [31:0] r_PC;
+reg instr_reg_reset = 1;
 
 //instruction memory signals
 reg [31:0] instr_mem_addr, instr_mem_data_in;
@@ -152,23 +155,14 @@ reg clock = 1;
 
 initial begin
     $dumpfile("cpu.vcd");
-    $dumpvars(0, clock);
-    $dumpvars(0, PC);
-    $dumpvars(0, r_instr_reg_out_32);
-    $dumpvars(0, instr_mem_rw);
-    $dumpvars(0, w_mem_op);
-    $dumpvars(0, w_branch_op);
-    $dumpvars(0, w_nop);
-    $dumpvars(0, w_op_type_6);
-    $dumpvars(0, w_decoder_instr_out_32);
-    $dumpvars(0, w_rs_5);
-    $dumpvars(0, w_rt_5);
-    $dumpvars(0, w_rd_5);
-    $dumpvars(0, w_sh_5);
-    $dumpvars(0, w_func_6);
-    $dumpvars(0, w_alu_imm_16);
-    $dumpvars(0, w_br_imm_26);
-
+    $dumpvars(0, alu);
+    $dumpvars(0, alu_in_ctrl);
+    $dumpvars(0, alu_imm);
+    $dumpvars(0, alu_rs_rt_sh_imm_mux);
+    $dumpvars(0, alu_rs_rt_mux);
+    $dumpvars(0, instruction_decoder);
+    $dumpvars(0, branch_ctrl);
+    $dumpvars(1, CPU);
     $readmemh("mips-benchmarks/add.x", read_instrs);
     instr_mem_rw = 0;
     #1000 $finish;
@@ -347,7 +341,7 @@ register_sync #(32) mdecoder_instr_output(.clock(clock), .reset(instr_reg_reset)
 
 *****************************************************************************************************************/
 //pc register
-pc_register #(32) PC_REGISTER (.clock(clock), .reset(MANUAL_PC_CTRL), .w_in(PC), .w_out(r_PC));
+//pc_register #(32) PC_REGISTER (.clock(clock), .reset(MANUAL_PC_CTRL), .w_in(PC), .w_out(r_PC));
 
 //ALU input wiring
 alu_input_ctrlr alu_in_ctrl (
@@ -372,7 +366,7 @@ branch_ctrlr branch_ctrl(
     .w_jump_op(r_ejump_op),
     .w_imm_op(r_eimm_op),
     .w_br_pc_in_32(r_epc),
-    .w_pc_32(r_PC),
+    .w_pc_32(input_r_PC),
     .w_alu_imm_32(r_ealu_imm_sgn_ext_32),
     .w_br_imm_26(r_ebr_imm_26),
     .w_reg_pc_32(r_ert_data_32),
@@ -410,17 +404,19 @@ always @(posedge clock) begin
             MANUAL_PC = MANUAL_PC + 4;
             instr_mem_data_in = read_instrs[counter];
             counter = counter + 1;
-            $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
+            $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", MANUAL_PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
         end
     end
     else
         begin
             if(writing)
                 begin
-                    MANUAL_PC_CTRL = 0;
+                    //MANUAL_PC_CTRL = 0;
+                    #1 r_PC = PC_BASE_ADDR - 4;
                     writing = 0;
+                    instr_reg_reset = 0;
                     instr_mem_rw = 1;
-                    $display("Resetting... PC:%h", PC);
+                    $display("Resetting... PC:%h", r_PC);
                 end
         end
 end
@@ -430,6 +426,7 @@ always @(posedge clock) begin
     if(~writing)
     begin
      #1 instr_mem_addr = r_PC - 32'h80020000;
+     r_PC = PC;
         $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, r_instr_reg_out_32);
     end
 end

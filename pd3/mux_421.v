@@ -11,7 +11,7 @@ input wire [WIDTH-1:0] w_input00_x, w_input01_x, w_input10_x, w_input11_x;
 input wire [1:0] w_ctrl_2;
 output reg [WIDTH-1:0] w_out_x;
 
-always @(w_ctrl_2) begin
+always @(*) begin
   case(w_ctrl_2)
   2'b00: w_out_x = w_input00_x;
   2'b01: w_out_x = w_input01_x;
