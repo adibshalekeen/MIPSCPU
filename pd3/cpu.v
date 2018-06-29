@@ -162,6 +162,11 @@ initial begin
     $dumpvars(0, alu_rs_rt_mux);
     $dumpvars(0, instruction_decoder);
     $dumpvars(0, branch_ctrl);
+    $dumpvars(0, reg_file);
+    $dumpvars(0, reg_file_waddr_rd_rt);
+    $dumpvars(0, reg_file_wdata_mem_imm);
+    $dumpvars(0, wb_in_sgn_ext_unit);
+    $dumpvars(1, d_mem);
     $dumpvars(1, CPU);
     $readmemh("mips-benchmarks/add.x", read_instrs);
     instr_mem_rw = 0;
@@ -312,6 +317,7 @@ register_sync #(5) mrs_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_er
 register_sync #(5) mrt_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_ert_5), .w_out(r_mrt_5));
 register_sync #(5) mrd_reg_5 (.clock(clock), .reset(instr_reg_reset), .w_in(r_erd_5), .w_out(r_mrd_5));
 //imms
+register_sync #(16) malu_imm_reg_16 (.clock(clock), .reset(instr_reg_reset), .w_in(r_ealu_imm_16), .w_out(r_malu_imm_16));
 register_sync #(26) mbr_imm_reg_26 (.clock(clock), .reset(instr_reg_reset), .w_in(r_ebr_imm_26), .w_out(r_mbr_imm_26));
 //rt value register
 register_sync #(32) mrt_data_value_reg_32(.clock(clock), .reset(instr_reg_reset), .w_in(r_ert_data_32), .w_out(r_mrt_data_32));
