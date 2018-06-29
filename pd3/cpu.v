@@ -234,7 +234,7 @@ data_mem d_mem(
 
 //Fetched instr register
 register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(instr_mem_data_out), .w_out(r_instr_reg_out_32));
-register_sync #(32) fpc_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(PC), .w_out(r_fpc));
+register_sync #(32) fpc_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(r_PC), .w_out(r_fpc));
 ///////////////////////////////////////////////DECODE_CTRL_SIGNALS/////////////////////////////////////////////////////////////////
 //op type
 register_sync #(32) dpc_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(r_fpc), .w_out(r_dpc));
