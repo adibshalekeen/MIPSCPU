@@ -18,9 +18,7 @@ always @(*) begin
         w_wdata_ctrl_out_2 = 2'b01;
     4'b0101:
         w_wdata_ctrl_out_2 = 2'b10;
-    4'b1000:
-        w_wdata_ctrl_out_2 = 2'b11;
-    4'b1001:
+    4'b1000, 4'b1001:
         w_wdata_ctrl_out_2 = 2'b11;
     default:
         w_wdata_ctrl_out_2 = 2'bXX;

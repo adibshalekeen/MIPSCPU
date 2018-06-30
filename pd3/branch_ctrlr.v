@@ -3,6 +3,7 @@ module branch_ctrlr(
     w_success,
     w_jump_op,
     w_imm_op,
+    w_stall,
     w_br_pc_in_32,
     w_pc_32,
     w_alu_imm_32,
@@ -10,7 +11,7 @@ module branch_ctrlr(
     w_reg_pc_32,
     w_pc_out_32
 );
-input wire w_branch_op, w_imm_op, w_success, w_jump_op;
+input wire w_branch_op, w_imm_op, w_success, w_jump_op, w_stall;
 input wire [31:0] w_br_pc_in_32, w_pc_32;
 input wire [31:0] w_alu_imm_32, w_reg_pc_32;
 input wire [25:0] w_br_imm_26;
@@ -39,7 +40,10 @@ always @(*) begin
             end
         end
     else
-        w_pc_out_32 = w_pc_32 + 32'h00000004;
+        if(w_stall)
+            w_pc_out_32 = w_pc_32;
+        else
+            w_pc_out_32 = w_pc_32 + 32'h00000004;
         $display("Branch Control: pc_in: %h, pc_out: %h", w_pc_32, w_pc_out_32);
 end
 endmodule
