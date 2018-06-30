@@ -63,38 +63,38 @@ assign execution_stage_str = w_dmem_op & w_dwrite_op;
 assign wb_stage_str = w_mmem_op & w_mwrite_op;
 always @(*) begin
     //mem -> exec bypass
-    if(w_ealu_op & w_eimm_op & ~execution_stage_str)
+    if(w_ealu_op & w_eimm_op)
     begin
             if((w_drs_addr_5 === w_ert_addr_5) & ~w_dimm_op)
                 w_me_rs_bypass = 1;
             else
                 w_me_rs_bypass = 0;
             
-            if((w_drt_addr_5 === w_ert_addr_5))
+            if((w_drt_addr_5 === w_ert_addr_5) & ~execution_stage_str)
                 w_me_rt_bypass = 1;
             else
                 w_me_rt_bypass = 0;
     end
-    else if(w_ealu_op & ~execution_stage_str)
+    else if(w_ealu_op)
         begin
             if((w_drs_addr_5 === w_erd_addr_5))
                 w_me_rs_bypass = 1;
             else
                 w_me_rs_bypass = 0;
 
-            if((w_drt_addr_5 === w_erd_addr_5))
+            if((w_drt_addr_5 === w_erd_addr_5) & ~execution_stage_str)
                 w_me_rt_bypass = 1;
             else
                 w_me_rt_bypass = 0;
         end
-    else if (((w_malu_op & w_mimm_op) | w_malu_op | (w_mmem_op & ~w_mwrite_op)) & ~execution_stage_str)
+    else if (((w_malu_op & w_mimm_op) | w_malu_op | (w_mmem_op & ~w_mwrite_op)))
         begin
              if((w_drs_addr_5 === w_wb_regfile_addr_5) & ~w_dimm_op)
                 w_we_rs_bypass = 1;
             else
                 w_we_rs_bypass = 0;
             
-            if((w_drt_addr_5 === w_wb_regfile_addr_5))
+            if((w_drt_addr_5 === w_wb_regfile_addr_5) & ~execution_stage_str)
                 w_we_rt_bypass = 1;
             else
                 w_we_rt_bypass = 0;
