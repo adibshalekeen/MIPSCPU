@@ -1,4 +1,5 @@
 module hazard_detection_ctrlr(
+    clock,
     w_mem_op,
     w_write_op,
     w_rs_addr_5,
@@ -29,7 +30,7 @@ module hazard_detection_ctrlr(
     w_me_rs_bypass,
     w_me_rt_bypass
 );
-input wire w_mem_op, w_write_op;
+input wire w_mem_op, w_write_op, clock;
 input wire [4:0] w_rs_addr_5, w_rt_addr_5;
 
 input wire w_dalu_op, w_dimm_op, w_dmem_op, w_dwrite_op;
@@ -133,7 +134,7 @@ always @(*) begin
         end
 
     if (w_me_rt_bypass & w_we_rt_bypass)
-        w_we_rt_bypass = 0;
+            w_we_rt_bypass = 0;
     
     if (w_me_rs_bypass & w_we_rs_bypass)
         w_we_rs_bypass = 0;

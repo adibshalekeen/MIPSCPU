@@ -184,7 +184,10 @@ always @(*) begin
                 w_unsigned_op = 1;
             else
                 w_unsigned_op = 0;
-            w_imm_op = 1;
+            if(op_code === `LUI)
+                w_imm_op = 1;
+            else
+                w_imm_op = 0;
             if(op_code === `LB | op_code === `LBU | op_code === `SB)
                 w_byte_op = 1;
             else

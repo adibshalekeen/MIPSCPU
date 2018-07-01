@@ -41,9 +41,9 @@ always @(*) begin
         end
     else
         if(w_stall)
-            w_pc_out_32 = w_pc_32;
+            w_pc_out_32 = w_pc_32 - 4;
         else
-            w_pc_out_32 = w_pc_32 + 32'h00000004;
+            w_pc_out_32 = w_pc_32 + 4;
         $display("Branch Control: pc_in: %h, pc_out: %h", w_pc_32, w_pc_out_32);
 end
 endmodule

@@ -14,19 +14,21 @@
 `include "mux_421.v"
 `include "mux_221.v"
 `include "sgn_extension_unit.v"
-module CPU #(parameter PC_BASE_ADDR = 32'h80020000);
+module CPU #(parameter PC_BASE_ADDR = 32'h8001FFFC);
 
 //PC signals
 reg [31:0] MANUAL_PC = PC_BASE_ADDR;
 wire [31:0] PC;
 wire [31:0] input_r_PC;
+reg manual_addressing = 1;
 assign input_r_PC = r_PC;
 reg MANUAL_PC_CTRL = 1;
 reg [31:0] r_PC;
 reg instr_reg_reset = 1;
 
 //instruction memory signals
-reg [31:0] instr_mem_addr, instr_mem_data_in;
+wire [31:0] instr_mem_addr;
+reg [31:0] instr_mem_data_in;
 wire [31:0] instr_mem_data_out;
 reg instr_mem_rw, instr_mem_enable = 1;
 
@@ -154,11 +156,12 @@ wire [1:0] w_reg_file_wdata_ctrl;
 wire [31:0] w_sgn_ext_mdmem_data_8;
 
 //bypass controller signals
-wire w_stall = 0;
+wire w_stall, w_stall1;
 wire w_wm_rt_bypass, w_we_rs_bypass, w_we_rt_bypass, w_me_rs_bypass, w_me_rt_bypass;
-
+wire [31:0] w_stalled_pc;
 //test_bench vars
 reg [31:0] read_instrs [1000 : 0];
+wire [1:0] instr_mem_addr_mux_ctrl;
 integer counter = 0;
 reg writing = 1;
 reg clock = 1;
@@ -184,6 +187,10 @@ initial begin
     $dumpvars(0, wb_wdata_ctrlr);
     $dumpvars(0, alu_rfrs_mrs_ers_bypass_mux);
     $dumpvars(0, alu_rfrt_mrt_ert_bypass_mux);
+    $dumpvars(0, stall_generator);
+    $dumpvars(0, branch_ctrl);
+    $dumpvars (0, instr_mem_input_mux);
+    $dumpvars (0, instruction_memory);
     $dumpvars(1, CPU);
     $readmemh("mips-benchmarks/add.x", read_instrs);
     instr_mem_rw = 0;
@@ -250,6 +257,7 @@ data_mem d_mem(
 );
 
 hazard_detection_ctrlr hazard_detector(
+    .clock(clock),
     .w_mem_op(w_mem_op),
     .w_write_op(w_write_op),
     .w_rs_addr_5(w_rs_5),
@@ -284,7 +292,7 @@ hazard_detection_ctrlr hazard_detector(
 mux_421 #(1) stall_generator (.w_input00_x(1'b0), .w_input01_x(1'b1), .w_input10_x(w_stall), .w_input11_x(w_stall), .w_out_x(w_dreg_reset), .w_ctrl_2(decode_stage_ctrl_reg_reset));
 
 //Fetched instr register
-register_sync #(32) instr_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(instr_mem_data_out), .w_out(r_instr_reg_out_32));
+register_sync #(32) instr_reg_32 (.clock(clock), .reset(w_dreg_reset), .w_in(instr_mem_data_out), .w_out(r_instr_reg_out_32));
 register_sync #(32) fpc_reg_32 (.clock(clock), .reset(instr_reg_reset), .w_in(r_PC), .w_out(r_fpc));
 ///////////////////////////////////////////////DECODE_CTRL_SIGNALS/////////////////////////////////////////////////////////////////
 //op type
@@ -402,6 +410,7 @@ register_sync #(32) mdecoder_instr_output(.clock(clock), .reset(memory_stage_ctr
 
 //ALU input wiring
 alu_input_ctrlr alu_in_ctrl (
+    .w_mem_op(r_dmem_op),
     .w_imm_op(r_dimm_op),
     .w_shift_op(r_dshift_op),
     .w_alu_lhs_ctrl(alu_lhs_ctrl),
@@ -460,14 +469,17 @@ sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_outpu
 mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(r_mrd_5), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl));
 mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(r_malu_out_32), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
 
+assign instr_mem_addr_mux_ctrl = {w_stall, manual_addressing};
+//// INSTRUCTION MEMORY INPUT METHOD IS SKETCHY AS FUCK, ASK ME BEFORE CHANGING IT 
+mux_421 #(32) instr_mem_input_mux (.w_input00_x(r_PC - 32'h80020000), .w_input01_x(MANUAL_PC - 32'h80020000), .w_input10_x(PC - 32'h80020000), .w_input11_x(PC - 32'h80020000), .w_out_x(instr_mem_addr), .w_ctrl_2(instr_mem_addr_mux_ctrl));
+
 //memory population loop
 always @(posedge clock) begin
     if(~(read_instrs[counter] === 32'bx))
     begin
         if(~instr_mem_rw)
         begin
-#1          instr_mem_addr = MANUAL_PC - 32'h80020000;
-            MANUAL_PC = MANUAL_PC + 4;
+#0.25       MANUAL_PC = MANUAL_PC + 4;
             instr_mem_data_in = read_instrs[counter];
             counter = counter + 1;
             $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", MANUAL_PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
@@ -483,6 +495,7 @@ always @(posedge clock) begin
                     decode_stage_ctrl_reg_reset = 2'b10;
                     execution_stage_ctrl_reg_reset = 0;
                     memory_stage_ctrl_reg_reset = 0;
+                    manual_addressing = 0;
                     instr_reg_reset = 0;
                     instr_mem_rw = 1;
                     $display("Resetting... PC:%h", r_PC);
@@ -494,8 +507,7 @@ end
 always @(posedge clock) begin
     if(~writing)
     begin
-     #1 instr_mem_addr = r_PC - 32'h80020000;
-     r_PC = PC;
+    #0.25 r_PC = PC;
         $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, r_instr_reg_out_32);
     end
 end
