@@ -70,7 +70,7 @@ always @(*) begin
             else
                 w_me_rs_bypass = 0;
             
-            if((w_drt_addr_5 === w_ert_addr_5) & ~execution_stage_str)
+            if((w_drt_addr_5 === w_ert_addr_5) & ~execution_stage_str & ~w_dimm_op)
                 w_me_rt_bypass = 1;
             else
                 w_me_rt_bypass = 0;
@@ -82,19 +82,27 @@ always @(*) begin
             else
                 w_me_rs_bypass = 0;
 
-            if((w_drt_addr_5 === w_erd_addr_5) & ~execution_stage_str)
+            if((w_drt_addr_5 === w_erd_addr_5) & ~execution_stage_str & ~w_dimm_op)
                 w_me_rt_bypass = 1;
             else
                 w_me_rt_bypass = 0;
         end
-    else if (((w_malu_op & w_mimm_op) | w_malu_op | (w_mmem_op & ~w_mwrite_op)))
+    else
         begin
-             if((w_drs_addr_5 === w_wb_regfile_addr_5) & ~w_dimm_op)
+            w_me_rs_bypass = 0;
+            w_me_rt_bypass = 0;
+            w_we_rs_bypass = 0;
+            w_we_rt_bypass = 0;
+        end
+
+    if (((w_malu_op & w_mimm_op) | w_malu_op | (w_mmem_op & ~w_mwrite_op)))
+        begin
+             if((w_drs_addr_5 === w_wb_regfile_addr_5))
                 w_we_rs_bypass = 1;
             else
                 w_we_rs_bypass = 0;
             
-            if((w_drt_addr_5 === w_wb_regfile_addr_5) & ~execution_stage_str)
+            if((w_drt_addr_5 === w_wb_regfile_addr_5) & ~execution_stage_str & ~w_dimm_op)
                 w_we_rt_bypass = 1;
             else
                 w_we_rt_bypass = 0;
@@ -119,6 +127,16 @@ always @(*) begin
 
     //if bypass paths from wb and mem take wb
     if(w_wm_rt_bypass & w_me_rt_bypass)
-        w_me_rt_bypass = 0;
+        begin
+            w_we_rt_bypass = 1;
+            w_me_rt_bypass = 0;
+        end
+
+    if (w_me_rt_bypass & w_we_rt_bypass)
+        w_we_rt_bypass = 0;
+    
+    if (w_me_rs_bypass & w_we_rs_bypass)
+        w_we_rs_bypass = 0;
+
 end
 endmodule
