@@ -64,8 +64,7 @@ always @(posedge clock) begin
     if(w_en)
     begin
         reg_file[w_address_d_5] = w_data_dval_32;
-         $display("Register Write: %h", w_data_dval_32);
+         $display("Register addr: %d data: %h",w_address_d_5, w_data_dval_32);
     end
-    $display("Register: s1:%h, s2:%h, s1 address:%h, s2 address:%h", w_data_s1val_32, w_data_s2val_32, w_address_s1_5, reg_file[5'b00010]);
 end
 endmodule

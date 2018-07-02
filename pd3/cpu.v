@@ -482,7 +482,6 @@ always @(posedge clock) begin
 #0.25       MANUAL_PC = MANUAL_PC + 4;
             instr_mem_data_in = read_instrs[counter];
             counter = counter + 1;
-            $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h", MANUAL_PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out);
         end
     end
     else
@@ -508,7 +507,6 @@ always @(posedge clock) begin
     if(~writing)
     begin
     #0.25 r_PC = PC;
-        $display("PC: %h, Mem_addr: %h, Data_in: %h, Data_out:%h, Reg_out: %h", PC, instr_mem_addr, instr_mem_data_in, instr_mem_data_out, r_instr_reg_out_32);
     end
 end
 

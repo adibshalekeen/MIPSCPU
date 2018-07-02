@@ -23,6 +23,5 @@ always @(*) begin
     default:
         w_wdata_ctrl_out_2 = 2'bXX;
   endcase
-  $display("Ctrl out:%h, op:%h", w_wdata_ctrl_out_2, op);
 end
 endmodule

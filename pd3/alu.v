@@ -186,6 +186,5 @@ always @(*) begin
                 w_output_condition = 0;
                 end
         endcase
-        $display("Wire out:%h, Output Condition:%h, HI:%h, LO: %h, input1:%h, input2:%h, opcode:%h", w_output_x, w_output_condition, HI, LO, w_input1_x, w_input2_x, w_op_code_6);
 end
 endmodule
