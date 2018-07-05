@@ -31,7 +31,9 @@ assign BLEZ = w_input1_x <= 0;
 
 always @(*) begin
         temp_signedi1 = w_input1_x;
-        temp_signedi2 = w_input2_x;      
+        temp_signedi2 = w_input2_x;
+        if(w_op_code_6 == `BEQ)
+           $display("FUCK! %b", w_op_code_6);
         case(w_op_code_6)
         `SPECIAL_ADD:
                 begin
@@ -102,6 +104,8 @@ always @(*) begin
                 end
         `SPECIAL_SLT, `SLTI:
                 begin
+                                $display("FUCK!2");
+
                 w_output_x = temp_signedi1 < temp_signedi2;
                 w_output_condition = 0;
                 end
@@ -147,6 +151,7 @@ always @(*) begin
                 end
         `BEQ:
                 begin
+                $display("EQ!");
                 w_output_x = 32'bX;
                 w_output_condition = BEQ;
                 end

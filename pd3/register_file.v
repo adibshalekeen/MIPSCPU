@@ -19,8 +19,11 @@ initial
 begin
     for (k=0; k<32; k=k+1)
     begin
-        reg_file[k] = k;
-        $display("Register: reg_file%h", reg_file[k]);
+        if(k==29)
+            reg_file[k] = 32'h00008000;
+        else
+            reg_file[k] = k;
+        //$display("Register: reg_file%h", reg_file[k]);
     end
 end
 
@@ -64,7 +67,7 @@ always @(posedge clock) begin
     if(w_en)
     begin
         reg_file[w_address_d_5] = w_data_dval_32;
-         $display("Register addr: %d data: %h",w_address_d_5, w_data_dval_32);
+        //$display("Register addr: %d data: %h",w_address_d_5, w_data_dval_32);
     end
 end
 endmodule

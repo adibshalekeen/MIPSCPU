@@ -92,8 +92,6 @@ always @(*) begin
         begin
             w_me_rs_bypass = 0;
             w_me_rt_bypass = 0;
-            w_we_rs_bypass = 0;
-            w_we_rt_bypass = 0;
         end
 
     if (((w_malu_op & w_mimm_op) | w_malu_op | (w_mmem_op & ~w_mwrite_op)))
@@ -110,8 +108,6 @@ always @(*) begin
         end
     else
     begin
-        w_me_rs_bypass = 0;
-        w_me_rt_bypass = 0;
         w_we_rs_bypass = 0;
         w_we_rt_bypass = 0;
     end
