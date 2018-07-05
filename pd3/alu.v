@@ -104,8 +104,6 @@ always @(*) begin
                 end
         `SPECIAL_SLT, `SLTI:
                 begin
-                                $display("FUCK!2");
-
                 w_output_x = temp_signedi1 < temp_signedi2;
                 w_output_condition = 0;
                 end
