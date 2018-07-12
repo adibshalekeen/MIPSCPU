@@ -445,7 +445,7 @@ branch_ctrlr branch_ctrl(
     .w_imm_op(r_eimm_op),
     .w_stall(w_stall),
     .w_dpc_in_32(r_dpc),
-    .w_epc_in_32(r_epc),
+    .w_epc_in_32(r_mpc),
     .w_pc_32(input_r_PC),
     .w_alu_imm_32(r_ealu_imm_sgn_ext_32),
     .w_br_imm_26(r_ebr_imm_26),
