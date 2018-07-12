@@ -244,6 +244,8 @@ register_file reg_file(
 
 ALU #(32) alu (
 .w_op_code_6(r_dop_type_6),
+.w_mem_op(r_dmem_op),
+.w_branch_op(r_dbranch_op),
 .w_input1_x(w_alu_lhs_32),
 .w_input2_x(w_alu_rhs_32),
 .w_output_x(w_alu_out_32),
