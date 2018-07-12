@@ -108,6 +108,7 @@ wire [31:0] r_exec_instr_out_32;
 
 wire [31:0] r_ealu_imm_sgn_ext_32;
 
+wire w_exec_stage_ctrl_reg_reset;
 //registered memory stage output
 reg memory_stage_ctrl_reg_reset = 1;
 wire [31:0] r_mpc;
@@ -331,36 +332,37 @@ register_sync #(32) ddecoder_instr_output(.clock(clock), .reset(w_dreg_reset), .
 
 ///////////////////////////////////////////////EXECUTION_CTRL_SIGNALS/////////////////////////////////////////////////////////////////
 //registering control signals
-register_sync #(32) epc_reg_32 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dpc), .w_out(r_epc));
+assign w_exec_stage_ctrl_reg_reset = execution_stage_ctrl_reg_reset | (w_dreg_reset & ~w_stall);
+register_sync #(32) epc_reg_32 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dpc), .w_out(r_epc));
 
 //op type
-register_sync #(1) ealu_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dalu_op), .w_out(r_ealu_op));
-register_sync #(1) eunsigned_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dunsigned_op), .w_out(r_eunsigned_op));
-register_sync #(1) eimm_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dimm_op), .w_out(r_eimm_op));
-register_sync #(1) ebyte_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dbyte_op), .w_out(r_ebyte_op));
-register_sync #(1) eshift_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dshift_op), .w_out(r_eshift_op));
-register_sync #(1) emem_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dmem_op), .w_out(r_emem_op));
-register_sync #(1) ewrite_op_reg_1(.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dwrite_op), .w_out(r_ewrite_op));
-register_sync #(1) ebranch_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dbranch_op), .w_out(r_ebranch_op));
-register_sync #(1) ejump_op_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_djump_op), .w_out(r_ejump_op));
-register_sync #(1) enop_reg_1 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dnop), .w_out(r_enop));
+register_sync #(1) ealu_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dalu_op), .w_out(r_ealu_op));
+register_sync #(1) eunsigned_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dunsigned_op), .w_out(r_eunsigned_op));
+register_sync #(1) eimm_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dimm_op), .w_out(r_eimm_op));
+register_sync #(1) ebyte_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dbyte_op), .w_out(r_ebyte_op));
+register_sync #(1) eshift_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dshift_op), .w_out(r_eshift_op));
+register_sync #(1) emem_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dmem_op), .w_out(r_emem_op));
+register_sync #(1) ewrite_op_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dwrite_op), .w_out(r_ewrite_op));
+register_sync #(1) ebranch_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dbranch_op), .w_out(r_ebranch_op));
+register_sync #(1) ejump_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_djump_op), .w_out(r_ejump_op));
+register_sync #(1) enop_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dnop), .w_out(r_enop));
 //op code
-register_sync #(6) eop_code_reg_6 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dop_type_6), .w_out(r_eop_type_6));
+register_sync #(6) eop_code_reg_6 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dop_type_6), .w_out(r_eop_type_6));
 //reg params
-register_sync #(5) ers_reg_5 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_drs_5), .w_out(r_ers_5));
-register_sync #(5) ert_reg_5 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_drt_5), .w_out(r_ert_5));
-register_sync #(5) erd_reg_5 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_drd_5), .w_out(r_erd_5));
+register_sync #(5) ers_reg_5 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_drs_5), .w_out(r_ers_5));
+register_sync #(5) ert_reg_5 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_drt_5), .w_out(r_ert_5));
+register_sync #(5) erd_reg_5 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_drd_5), .w_out(r_erd_5));
 //imm vals
-register_sync #(26) ebr_imm_reg_26 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dbr_imm_26), .w_out(r_ebr_imm_26));
-register_sync #(16) ealu_imm_reg_16 (.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_dalu_imm_16), .w_out(r_ealu_imm_16));
+register_sync #(26) ebr_imm_reg_26 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dbr_imm_26), .w_out(r_ebr_imm_26));
+register_sync #(16) ealu_imm_reg_16 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dalu_imm_16), .w_out(r_ealu_imm_16));
 //raw instr (for debugging)
-register_sync #(32) edecoder_instr_output(.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(r_decoder_instr_out_32), .w_out(r_exec_instr_out_32));
+register_sync #(32) edecoder_instr_output(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_decoder_instr_out_32), .w_out(r_exec_instr_out_32));
 
 //rt value register
-register_sync #(32) ert_data_value_reg_32(.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(w_reg_file_dout2_32), .w_out(r_ert_data_32));
+register_sync #(32) ert_data_value_reg_32(.clock(clock), .reset((execution_stage_ctrl_reg_reset |  (w_dreg_reset & ~w_stall))), .w_in(w_reg_file_dout2_32), .w_out(r_ert_data_32));
 //ALU output register
-register_sync #(32) ealu_output_reg_32(.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(w_alu_out_32), .w_out(r_ealu_out_32));
-register_sync #(1) ealu_br_condition_reg_1(.clock(clock), .reset((execution_stage_ctrl_reg_reset | w_dreg_reset)), .w_in(w_alu_br_condition), .w_out(r_ealu_br_condition));
+register_sync #(32) ealu_output_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_out_32), .w_out(r_ealu_out_32));
+register_sync #(1) ealu_br_condition_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_br_condition), .w_out(r_ealu_br_condition));
 
 ///////////////////////////////////////////////MEMORY_CTRL_SIGNALS/////////////////////////////////////////////////////////////////
 register_sync #(32) mpc_reg_32 (.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_epc), .w_out(r_mpc));
