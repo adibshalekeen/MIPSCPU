@@ -82,7 +82,7 @@ wire [25:0] r_dbr_imm_26;
 wire [31:0] r_decoder_instr_out_32;
 
 //registered execution output + ctrl signal registers after register file stage
-reg execution_stage_ctrl_reg_reset = 1;
+reg manual_execution_stage_ctrl_reg_reset = 1;
 wire [31:0] r_epc;
 wire r_ealu_op;
 wire r_eunsigned_op;
@@ -332,7 +332,7 @@ register_sync #(32) ddecoder_instr_output(.clock(clock), .reset(w_dreg_reset), .
 
 ///////////////////////////////////////////////EXECUTION_CTRL_SIGNALS/////////////////////////////////////////////////////////////////
 //registering control signals
-assign w_exec_stage_ctrl_reg_reset = execution_stage_ctrl_reg_reset | (w_dreg_reset & ~w_stall);
+assign w_exec_stage_ctrl_reg_reset = manual_execution_stage_ctrl_reg_reset | (w_dreg_reset & ~w_stall);
 register_sync #(32) epc_reg_32 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dpc), .w_out(r_epc));
 
 //op type
@@ -359,7 +359,7 @@ register_sync #(16) ealu_imm_reg_16 (.clock(clock), .reset(w_exec_stage_ctrl_reg
 register_sync #(32) edecoder_instr_output(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_decoder_instr_out_32), .w_out(r_exec_instr_out_32));
 
 //rt value register
-register_sync #(32) ert_data_value_reg_32(.clock(clock), .reset((execution_stage_ctrl_reg_reset |  (w_dreg_reset & ~w_stall))), .w_in(w_reg_file_dout2_32), .w_out(r_ert_data_32));
+register_sync #(32) ert_data_value_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_reg_file_dout2_32), .w_out(r_ert_data_32));
 //ALU output register
 register_sync #(32) ealu_output_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_out_32), .w_out(r_ealu_out_32));
 register_sync #(1) ealu_br_condition_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_br_condition), .w_out(r_ealu_br_condition));
@@ -477,7 +477,7 @@ reg_file_wdata_ctrlr wb_wdata_ctrlr(
 mux_221 #(32) dmem_ert_wb_mux(.w_input0_x(r_ert_data_32), .w_input1_x(w_reg_file_dval_32), .w_out_x(w_dmem_data_in_32), .w_ctrl(w_wm_rt_bypass));
 
 sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_output_32(w_sgn_ext_mdmem_data_8));
-mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(r_mrd_5), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl));
+mux_421 #(5) reg_file_waddr_rd_rt(.w_input00_x(r_mrd_5), .w_input01_x(r_mrt_5), .w_input10_x(5'b11111), .w_input11_x(5'bx) .w_out_x(w_reg_file_daddr_5), .w_ctrl_2({r_mjump_op , w_reg_file_waddr_ctrl}));
 mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(r_malu_out_32), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
 
 assign instr_mem_addr_mux_ctrl = {(w_stall | r_ebranch_op | r_ejump_op), manual_addressing};
@@ -503,7 +503,7 @@ always @(posedge clock) begin
                     #1 r_PC = PC_BASE_ADDR - 4;
                     writing = 0;
                     decode_stage_ctrl_reg_reset = 2'b10;
-                    execution_stage_ctrl_reg_reset = 0;
+                    manual_execution_stage_ctrl_reg_reset = 0;
                     memory_stage_ctrl_reg_reset = 0;
                     manual_addressing = 0;
                     instr_reg_reset = 0;
