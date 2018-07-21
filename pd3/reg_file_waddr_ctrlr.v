@@ -12,8 +12,10 @@ output reg w_waddr_ctrlr_out;
 
 assign w_en_out = w_alu_op | (w_mem_op & ~w_write_op);
 
-always @(w_mem_op, w_alu_op) begin
-    if(w_mem_op | (w_alu_op & w_imm_op))
+always @(w_mem_op, w_alu_op, w_imm_op) begin
+    if(w_mem_op)
+        w_waddr_ctrlr_out = 1;
+    else if (w_alu_op & w_imm_op)
         w_waddr_ctrlr_out = 1;
     else if (w_alu_op)
         w_waddr_ctrlr_out = 0;

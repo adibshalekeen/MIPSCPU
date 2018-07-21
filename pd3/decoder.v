@@ -97,7 +97,7 @@ always @(*) begin
                     w_jump_op = 0;
                     w_nop = 0;
                 end
-            `SPECIAL_ADD, `SPECIAL_SUB, `SPECIAL_MULT, `SPECIAL_DIV, `SPECIAL_SLT:
+            `SPECIAL_ADD, `SPECIAL_SUB, `SPECIAL_MULT, `SPECIAL_DIV, `SPECIAL_SLT, `SPECIAL_AND, `SPECIAL_OR, `SPECIAL_XOR, `SPECIAL_NOR:
                 begin
                     w_alu_op = 1;
                     w_unsigned_op = 0;

@@ -480,7 +480,7 @@ sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_outpu
 mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(r_mrd_5), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl)); 
 mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(r_malu_out_32), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
 
-assign instr_mem_addr_mux_ctrl = {(w_stall | r_ebranch_op | r_ejump_op), manual_addressing};
+assign instr_mem_addr_mux_ctrl = {(w_stall | (r_ebranch_op & r_ealu_br_condition) | r_ejump_op), manual_addressing};
 //// INSTRUCTION MEMORY INPUT METHOD IS SKETCHY AS FUCK, ASK ME BEFORE CHANGING IT 
 mux_421 #(32) instr_mem_input_mux (.w_input00_x(r_PC), .w_input01_x(MANUAL_PC), .w_input10_x(w_advanced_pc_32), .w_input11_x(w_advanced_pc_32), .w_out_x(instr_mem_addr), .w_ctrl_2(instr_mem_addr_mux_ctrl));
 
