@@ -82,7 +82,7 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 1;
-                    w_nop = 0;
+                    w_nop = 1;
                 end
             `SPECIAL_ADDU, `SPECIAL_SUBU, `SPECIAL_MULTU, `SPECIAL_DIVU, `SPECIAL_SLTU:
                 begin
