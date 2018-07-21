@@ -137,6 +137,8 @@ wire [7:0] r_mdmem_data_8;
 wire [31:0] r_mem_instr_out_32;
 
 //register file signals
+wire [4:0] w_reg_file_waddr;
+wire [31:0] w_reg_file_wdata;
 wire [4:0] w_reg_file_daddr_5;
 wire [31:0] w_reg_file_dval_32, w_reg_file_dout1_32, w_reg_file_dout2_32;
 wire w_reg_file_wen;
@@ -461,6 +463,8 @@ reg_file_waddr_ctrlr wb_wadder_ctrlr (
     .w_alu_op(r_malu_op),
     .w_imm_op(r_mimm_op),
     .w_mem_op(r_mmem_op),
+    .w_jump_op(r_mjump_op),
+    .w_nop(r_mnop),
     .w_write_op(r_mwrite_op),
     .w_en_out(w_reg_file_wen),
     .w_waddr_ctrlr_out(w_reg_file_waddr_ctrl)
@@ -469,6 +473,8 @@ reg_file_waddr_ctrlr wb_wadder_ctrlr (
 reg_file_wdata_ctrlr wb_wdata_ctrlr(
     .w_alu_op(r_malu_op),
     .w_mem_op(r_mmem_op),
+    .w_jump_op(r_mjump_op),
+    .w_nop(r_mnop),
     .w_byte_op(r_mbyte_op),
     .w_imm_op(r_mimm_op),
     .w_wdata_ctrl_out_2(w_reg_file_wdata_ctrl)
@@ -477,8 +483,10 @@ reg_file_wdata_ctrlr wb_wdata_ctrlr(
 mux_221 #(32) dmem_ert_wb_mux(.w_input0_x(r_ert_data_32), .w_input1_x(w_reg_file_dval_32), .w_out_x(w_dmem_data_in_32), .w_ctrl(w_wm_rt_bypass));
 
 sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_output_32(w_sgn_ext_mdmem_data_8));
-mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(r_mrd_5), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl)); 
-mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(r_malu_out_32), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
+mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(w_reg_file_waddr), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl));
+mux_221 #(5) reg_file_jump_rd_ra(.w_input0_x(r_mrd_5), .w_input1_x(5'b11111), .w_out_x(w_reg_file_waddr), .w_ctrl(r_mjump_op)); 
+mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(w_reg_file_wdata), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
+mux_221 #(32) reg_file_jump_malu_pc(.w_input0_x(r_malu_out_32), .w_input1_x(r_mpc + 8), .w_out_x(w_reg_file_wdata), .w_ctrl(r_mjump_op));
 
 assign instr_mem_addr_mux_ctrl = {(w_stall | (r_ebranch_op & r_ealu_br_condition) | r_ejump_op), manual_addressing};
 //// INSTRUCTION MEMORY INPUT METHOD IS SKETCHY AS FUCK, ASK ME BEFORE CHANGING IT 
