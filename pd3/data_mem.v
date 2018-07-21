@@ -32,6 +32,7 @@ always @(posedge clock) begin
                 memory_block[w_addr_32 + 1] = w_data_in_32[23:16];
                 memory_block[w_addr_32] = w_data_in_32[31:24];
             end
+    $display("Memory addr: %d data: %d",w_addr_32, w_data_in_32);
     end
 end
 

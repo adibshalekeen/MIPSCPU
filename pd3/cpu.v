@@ -198,7 +198,7 @@ initial begin
     $dumpvars (0, instruction_memory);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/Fibonacci.x", read_instrs);
+    $readmemh("mips-benchmarks/add.x", read_instrs);
     instr_mem_rw = 0;
     #10000 $finish;
 end
