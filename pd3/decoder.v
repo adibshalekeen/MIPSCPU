@@ -12,6 +12,7 @@ module decoder(
     w_write_op,
     w_branch_op,
     w_jump_op,
+    w_reg_jump_op,
     w_op_type_6,
     w_branch_imm_val_26,
     w_rs_addr_5,
@@ -41,6 +42,7 @@ output reg [31:0] w_mem_op_type_32;
 //branch control singals
 output reg w_branch_op;
 output reg w_jump_op;
+output reg w_reg_jump_op;
 output wire [25:0] w_branch_imm_val_26;
 
 output reg w_nop;
@@ -82,7 +84,8 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 1;
-                    w_nop = 1;
+                    w_reg_jump_op = 1;
+                    w_nop = 0;
                 end
             `SPECIAL_ADDU, `SPECIAL_SUBU, `SPECIAL_MULTU, `SPECIAL_DIVU, `SPECIAL_SLTU:
                 begin
@@ -95,6 +98,7 @@ always @(*) begin
                     w_shift_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
+                    w_reg_jump_op = 0;
                     w_nop = 0;
                 end
             `SPECIAL_ADD, `SPECIAL_SUB, `SPECIAL_MULT, `SPECIAL_DIV, `SPECIAL_SLT, `SPECIAL_AND, `SPECIAL_OR, `SPECIAL_XOR, `SPECIAL_NOR:
@@ -108,6 +112,7 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
+                    w_reg_jump_op = 0;
                     w_nop = 0;
                 end
                 `SPECIAL_SRL, `SPECIAL_SRA:
@@ -121,6 +126,7 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
+                    w_reg_jump_op = 0;
                     w_nop = 0;
                 end
             `SPECIAL_SLLV, `SPECIAL_SRLV, `SPECIAL_SRAV:
@@ -134,6 +140,7 @@ always @(*) begin
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
+                    w_reg_jump_op = 0;
                     w_nop = 0;
                 end
             default:
@@ -141,21 +148,24 @@ always @(*) begin
                     if(w_func_6 === `SPECIAL_SLL & w_sh_amt_5 > 0)
                         begin
                             w_alu_op = 1;
+                            w_shift_op = 1;
+                            w_imm_op = 1;
                             w_nop = 0;
                         end
                     else
                         begin
                             w_alu_op = 0;
+                            w_imm_op = 0;
+                            w_shift_op = 0;
                             w_nop = 1;
                         end
                     w_unsigned_op = 0;
-                    w_imm_op = 0;
                     w_byte_op = 0;
-                    w_shift_op = 0;
                     w_mem_op = 0;
                     w_write_op = 0;
                     w_branch_op = 0;
                     w_jump_op = 0;
+                    w_reg_jump_op = 0;
                 end
             endcase
             w_op_type_6 = w_func_6;
@@ -174,6 +184,7 @@ always @(*) begin
             w_write_op = 0;
             w_branch_op = 0;
             w_jump_op = 0;
+            w_reg_jump_op = 0;
             w_nop = 0;
             w_op_type_6 = op_code;
         end
@@ -200,6 +211,7 @@ always @(*) begin
                 w_write_op = 0;
             w_branch_op = 0;
             w_jump_op = 0;
+            w_reg_jump_op = 0;
             w_nop = 0;
             w_op_type_6 = op_code;
         end
@@ -211,6 +223,7 @@ always @(*) begin
                     w_jump_op = 1;
                     w_imm_op = 1;
                     w_branch_op = 0;
+                    w_reg_jump_op = 1;
                 end
             else
                 begin
@@ -236,6 +249,7 @@ always @(*) begin
                 w_write_op = 0;
                 w_shift_op = 0;
                 w_jump_op = 0;
+                w_reg_jump_op = 0;
             if(w_rt_addr_5 === `BGEZ || w_rt_addr_5 === `BLTZ)
             begin
                 w_branch_op = 1;
@@ -258,6 +272,7 @@ always @(*) begin
             w_shift_op = 0;
             w_branch_op = 0;
             w_jump_op = 0;
+            w_reg_jump_op = 0;
             w_nop = 1;
             w_op_type_6 = 6'bx;
         end

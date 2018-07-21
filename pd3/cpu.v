@@ -46,6 +46,7 @@ wire w_mem_op;
 wire w_write_op;
 wire w_branch_op;
 wire w_jump_op;
+wire w_reg_jump_op;
 wire w_nop;
 wire [15:0] w_alu_imm_16;
 wire [25:0] w_br_imm_26;
@@ -70,6 +71,7 @@ wire r_dmem_op;
 wire r_dwrite_op;
 wire r_dbranch_op;
 wire r_djump_op;
+wire r_dreg_jump_op;
 wire r_dnop;
 wire [5:0] r_dop_type_6;
 wire [4:0] r_drs_5;
@@ -93,6 +95,7 @@ wire r_emem_op;
 wire r_ewrite_op;
 wire r_ebranch_op;
 wire r_ejump_op;
+wire r_ereg_jump_op;
 wire r_enop;
 wire [5:0] r_eop_type_6;
 wire [4:0] r_ers_5;
@@ -104,6 +107,7 @@ wire [15:0] r_ealu_imm_16;
 wire [31:0] r_ealu_out_32;
 wire r_ealu_br_condition;
 wire [31:0] r_ert_data_32;
+wire [31:0] r_ers_data_32;
 wire [31:0] r_exec_instr_out_32;
 
 wire [31:0] r_ealu_imm_sgn_ext_32;
@@ -121,6 +125,7 @@ wire r_mmem_op;
 wire r_mwrite_op;
 wire r_mbranch_op;
 wire r_mjump_op;
+wire r_mreg_jump_op;
 wire r_mnop;
 wire [5:0] r_mop_type_6;
 wire [4:0] r_mrs_5;
@@ -138,6 +143,7 @@ wire [31:0] r_mem_instr_out_32;
 
 //register file signals
 wire [4:0] w_reg_file_waddr;
+wire [31:0] r_wpc;
 wire [31:0] w_reg_file_wdata;
 wire [4:0] w_reg_file_daddr_5;
 wire [31:0] w_reg_file_dval_32, w_reg_file_dout1_32, w_reg_file_dout2_32;
@@ -186,7 +192,7 @@ initial begin
     $dumpvars(0, reg_file_waddr_rd_rt);
     $dumpvars(0, reg_file_wdata_mem_imm);
     $dumpvars(0, wb_in_sgn_ext_unit);
-    $dumpvars(1, d_mem);
+    $dumpvars(0, d_mem);
     $dumpvars(0, dmem_ert_wb_mux);
     $dumpvars(0, hazard_detector);
     $dumpvars(0, instruction_decoder);
@@ -200,9 +206,9 @@ initial begin
     $dumpvars (0, instruction_memory);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/add.x", read_instrs);
+    $readmemh("mips-benchmarks/SumArray.x", read_instrs);
     instr_mem_rw = 0;
-    #10000 $finish;
+    #100000 $finish;
 end
 
 mem instruction_memory(.w_data_in_32(instr_mem_data_in),
@@ -224,6 +230,7 @@ decoder instruction_decoder(
 .w_write_op(w_write_op),
 .w_branch_op(w_branch_op),
 .w_jump_op(w_jump_op),
+.w_reg_jump_op(w_reg_jump_op),
 .w_nop(w_nop),
 .w_alu_imm_val_16(w_alu_imm_16),
 .w_branch_imm_val_26(w_br_imm_26),
@@ -268,6 +275,9 @@ data_mem d_mem(
 
 hazard_detection_ctrlr hazard_detector(
     .clock(clock),
+    .w_alu_op(w_alu_op),
+    .w_imm_op(w_imm_op),
+    .w_jump_op(w_jump_op),
     .w_mem_op(w_mem_op),
     .w_write_op(w_write_op),
     .w_rs_addr_5(w_rs_5),
@@ -317,6 +327,7 @@ register_sync #(1) dmem_op_reg_1 (.clock(clock), .reset(w_dreg_reset), .w_in(w_m
 register_sync #(1) dwrite_op_reg_1(.clock(clock), .reset(w_dreg_reset), .w_in(w_write_op), .w_out(r_dwrite_op));
 register_sync #(1) dbranch_op_reg_1 (.clock(clock), .reset(w_dreg_reset), .w_in(w_branch_op), .w_out(r_dbranch_op));
 register_sync #(1) djump_op_reg_1 (.clock(clock), .reset(w_dreg_reset), .w_in(w_jump_op), .w_out(r_djump_op));
+register_sync #(1) dreg_jump_op_reg_1(.clock(clock), .reset(w_dreg_reset), .w_in(w_reg_jump_op), .w_out(r_dreg_jump_op));
 register_sync #(1) dnop_reg_1 (.clock(clock), .reset(w_dreg_reset), .w_in(w_nop), .w_out(r_dnop));
 //op code
 register_sync #(6) dop_code_reg_6 (.clock(clock), .reset(w_dreg_reset), .w_in(w_op_type_6), .w_out(r_dop_type_6));
@@ -347,6 +358,7 @@ register_sync #(1) emem_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_re
 register_sync #(1) ewrite_op_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dwrite_op), .w_out(r_ewrite_op));
 register_sync #(1) ebranch_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dbranch_op), .w_out(r_ebranch_op));
 register_sync #(1) ejump_op_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_djump_op), .w_out(r_ejump_op));
+register_sync #(1) ereg_jump_op_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dreg_jump_op), .w_out(r_ereg_jump_op));
 register_sync #(1) enop_reg_1 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dnop), .w_out(r_enop));
 //op code
 register_sync #(6) eop_code_reg_6 (.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(r_dop_type_6), .w_out(r_eop_type_6));
@@ -362,6 +374,7 @@ register_sync #(32) edecoder_instr_output(.clock(clock), .reset(w_exec_stage_ctr
 
 //rt value register
 register_sync #(32) ert_data_value_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_reg_file_dout2_32), .w_out(r_ert_data_32));
+register_sync #(32) ers_data_value_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_reg_file_dout1_32), .w_out(r_ers_data_32));
 //ALU output register
 register_sync #(32) ealu_output_reg_32(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_out_32), .w_out(r_ealu_out_32));
 register_sync #(1) ealu_br_condition_reg_1(.clock(clock), .reset(w_exec_stage_ctrl_reg_reset), .w_in(w_alu_br_condition), .w_out(r_ealu_br_condition));
@@ -379,6 +392,8 @@ register_sync #(1) mmem_op_reg_1 (.clock(clock), .reset(memory_stage_ctrl_reg_re
 register_sync #(1) mwrite_op_reg_1(.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_ewrite_op), .w_out(r_mwrite_op));
 register_sync #(1) mbranch_op_reg_1 (.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_ebranch_op), .w_out(r_mbranch_op));
 register_sync #(1) mjump_op_reg_1 (.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_ejump_op), .w_out(r_mjump_op));
+register_sync #(1) mreg_jump_op_reg_1(.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_ereg_jump_op), .w_out(r_mreg_jump_op));
+
 register_sync #(1) mnop_reg_1 (.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_enop), .w_out(r_mnop));
 //op code
 register_sync #(6) mop_code_reg_6 (.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_eop_type_6), .w_out(r_mop_type_6));
@@ -394,7 +409,7 @@ register_sync #(32) mrt_data_value_reg_32(.clock(clock), .reset(memory_stage_ctr
 
 //ALU output register
 register_sync #(32) malu_output_reg_32(.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(r_ealu_out_32), .w_out(r_malu_out_32));
-
+register_sync #(32) r_wpc_reg_32(.clock(clock), .reset(1'b0), .w_in(r_mpc), .w_out(r_wpc));
 //memory output register
 register_sync #(32) mdmem_output_reg_32(.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(w_dmem_data_out_32), .w_out(r_mdmem_data_32));
 register_sync #(8) mdmem_output_reg_8(.clock(clock), .reset(memory_stage_ctrl_reg_reset), .w_in(w_dmem_data_out_8), .w_out(r_mdmem_data_8));
@@ -437,7 +452,7 @@ mux_221 #(32) alu_imm(.w_input0_x({16'b0, r_dalu_imm_16}), .w_input1_x(w_dalu_im
 mux_421 #(32) alu_rfrs_mrs_ers_bypass_mux(.w_input00_x(w_reg_file_dout1_32), .w_input01_x(w_reg_file_dval_32), .w_input10_x(r_ealu_out_32), .w_input11_x(r_ealu_out_32), .w_out_x(w_rs_bypass_mux_32), .w_ctrl_2({w_me_rs_bypass, w_we_rs_bypass}));
 mux_421 #(32) alu_rfrt_mrt_ert_bypass_mux(.w_input00_x(w_reg_file_dout2_32), .w_input01_x(w_reg_file_dval_32), .w_input10_x(r_ealu_out_32), .w_input11_x(r_ealu_out_32), .w_out_x(w_rt_bypass_mux_32), .w_ctrl_2({w_me_rt_bypass, w_we_rt_bypass}));
 
-mux_421 #(32) alu_rs_rt_sh_imm_mux (.w_input00_x(w_rs_bypass_mux_32), .w_input01_x(w_rt_bypass_mux_32), .w_input10_x({27'b0, r_dsh_5}), .w_input11_x(w_alu_imm_32), .w_out_x(w_alu_rhs_32), .w_ctrl_2(alu_rhs_ctrl));
+mux_421 #(32) alu_rs_rt_sh_imm_mux (.w_input00_x(w_rs_bypass_mux_32), .w_input01_x(w_rt_bypass_mux_32), .w_input10_x(32'b0 | r_dsh_5), .w_input11_x(w_alu_imm_32), .w_out_x(w_alu_rhs_32), .w_ctrl_2(alu_rhs_ctrl));
 mux_221 #(32) alu_rs_rt_mux (.w_input0_x(w_rs_bypass_mux_32), .w_input1_x(w_rt_bypass_mux_32), .w_out_x(w_alu_lhs_32), .w_ctrl(alu_lhs_ctrl));
 
 //branch ctrlr wiring
@@ -453,7 +468,7 @@ branch_ctrlr branch_ctrl(
     .w_pc_32(input_r_PC),
     .w_alu_imm_32(r_ealu_imm_sgn_ext_32),
     .w_br_imm_26(r_ebr_imm_26),
-    .w_reg_pc_32(r_ert_data_32),
+    .w_reg_pc_32(r_ers_data_32),
     .w_pc_out_32(PC),
     .w_pc_advanced_out_32(w_advanced_pc_32)
 );
@@ -464,7 +479,8 @@ reg_file_waddr_ctrlr wb_wadder_ctrlr (
     .w_imm_op(r_mimm_op),
     .w_mem_op(r_mmem_op),
     .w_jump_op(r_mjump_op),
-    .w_nop(r_mnop),
+    .w_mrd(r_mrd_5),
+    .w_reg_jump_op(r_mreg_jump_op),
     .w_write_op(r_mwrite_op),
     .w_en_out(w_reg_file_wen),
     .w_waddr_ctrlr_out(w_reg_file_waddr_ctrl)
@@ -474,7 +490,7 @@ reg_file_wdata_ctrlr wb_wdata_ctrlr(
     .w_alu_op(r_malu_op),
     .w_mem_op(r_mmem_op),
     .w_jump_op(r_mjump_op),
-    .w_nop(r_mnop),
+    .w_reg_jump_op(r_mreg_jump_op),
     .w_byte_op(r_mbyte_op),
     .w_imm_op(r_mimm_op),
     .w_wdata_ctrl_out_2(w_reg_file_wdata_ctrl)
@@ -484,9 +500,9 @@ mux_221 #(32) dmem_ert_wb_mux(.w_input0_x(r_ert_data_32), .w_input1_x(w_reg_file
 
 sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_output_32(w_sgn_ext_mdmem_data_8));
 mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(w_reg_file_waddr), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl));
-mux_221 #(5) reg_file_jump_rd_ra(.w_input0_x(r_mrd_5), .w_input1_x(5'b11111), .w_out_x(w_reg_file_waddr), .w_ctrl(r_mjump_op)); 
+mux_221 #(5) reg_file_jump_rd_ra(.w_input0_x(r_mrd_5), .w_input1_x(5'b11111), .w_out_x(w_reg_file_waddr), .w_ctrl(r_mjump_op & r_mimm_op)); 
 mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(w_reg_file_wdata), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));
-mux_221 #(32) reg_file_jump_malu_pc(.w_input0_x(r_malu_out_32), .w_input1_x(r_mpc + 8), .w_out_x(w_reg_file_wdata), .w_ctrl(r_mjump_op));
+mux_221 #(32) reg_file_jump_malu_pc(.w_input0_x(r_malu_out_32), .w_input1_x(r_wpc + 8), .w_out_x(w_reg_file_wdata), .w_ctrl(r_mjump_op & r_mimm_op));
 
 assign instr_mem_addr_mux_ctrl = {(w_stall | (r_ebranch_op & r_ealu_br_condition) | r_ejump_op), manual_addressing};
 //// INSTRUCTION MEMORY INPUT METHOD IS SKETCHY AS FUCK, ASK ME BEFORE CHANGING IT 

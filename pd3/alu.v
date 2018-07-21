@@ -81,7 +81,10 @@ always @(*) begin
                 case(w_op_code_6)
                 `LW, `SW, `LUI, `LB, `LBU, `SB:
                         begin
-                        w_output_x = temp_signedi1 + temp_signedi2;
+                        if(w_op_code_6 == `LUI)
+                                w_output_x = {temp_signedi2, 16'b0};
+                        else
+                                w_output_x = temp_signedi1 + temp_signedi2;
                         w_output_condition = 0;
                         end
                 default:

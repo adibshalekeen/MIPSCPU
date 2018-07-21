@@ -1,5 +1,8 @@
 module hazard_detection_ctrlr(
     clock,
+    w_alu_op,
+    w_imm_op,
+    w_jump_op,
     w_mem_op,
     w_write_op,
     w_rs_addr_5,
@@ -30,7 +33,7 @@ module hazard_detection_ctrlr(
     w_me_rs_bypass,
     w_me_rt_bypass
 );
-input wire w_mem_op, w_write_op, clock;
+input wire w_mem_op, w_alu_op, w_imm_op, w_jump_op, w_write_op, clock;
 input wire [4:0] w_rs_addr_5, w_rt_addr_5;
 
 input wire w_dalu_op, w_dimm_op, w_dmem_op, w_dwrite_op;
@@ -51,13 +54,11 @@ wire wb_stage_str;
 always @(*)begin
     //load-use stall for alu instructions (str can bypass)
     if((w_dmem_op & ~w_dwrite_op) & ((w_rs_addr_5 === w_drt_addr_5) | ((w_rt_addr_5 === w_drt_addr_5) & ~(w_mem_op & w_write_op))))
-        begin
-            w_stall = 1;
-        end
+        w_stall = 1;
+    else if (((w_rs_addr_5 === w_wb_regfile_addr_5) & ((w_alu_op | w_jump_op | w_mem_op) & ~w_imm_op)) | ((w_rt_addr_5 === w_wb_regfile_addr_5) & ~(w_jump_op & w_imm_op)))
+        w_stall = 1;
     else
-        begin
-            w_stall = 0;
-        end
+        w_stall = 0;
 end
 
 assign execution_stage_str = w_dmem_op & w_dwrite_op;
