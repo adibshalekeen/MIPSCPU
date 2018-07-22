@@ -186,6 +186,7 @@ always @(*) begin
             w_op_type_6 = op_code;    
         end
         `ANDI:
+        begin
             w_alu_op = 1;
             w_unsigned_op = 0;
             w_imm_op = 1;
@@ -197,7 +198,8 @@ always @(*) begin
             w_jump_op = 0;
             w_reg_jump_op = 0;
             w_nop = 0;
-            w_op_type_6 = op_code;   
+            w_op_type_6 = op_code; 
+        end  
         `ADDIU, `SLTI, `SLTIU, `ORI, `XORI:
         begin
             w_alu_op = 1;
