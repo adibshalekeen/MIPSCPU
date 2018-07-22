@@ -141,6 +141,9 @@ wire [31:0] r_mdmem_data_32;
 wire [7:0] r_mdmem_data_8;
 wire [31:0] r_mem_instr_out_32;
 
+wire [31:0] w_jump_reg_val_32;
+wire w_wm_jump_bypass;
+
 //register file signals
 wire [4:0] w_reg_file_waddr;
 wire [31:0] r_wpc;
@@ -182,6 +185,7 @@ reg clock = 1;
 initial begin
     $dumpfile("cpu.vcd");
     $dumpvars(0, alu);
+    $dumpvars (0, reg_jump_mux_reg_32);
     $dumpvars(0, alu_in_ctrl);
     $dumpvars(0, alu_imm);
     $dumpvars(0, alu_rs_rt_sh_imm_mux);
@@ -207,7 +211,7 @@ initial begin
     $dumpvars(0, instr_mem_input_mux);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/Fact.x", read_instrs);
+    $readmemh("mips-benchmarks/BubbleSort.x", read_instrs);
     instr_mem_rw = 0;
     #100000 $finish;
 end
@@ -286,6 +290,7 @@ hazard_detection_ctrlr hazard_detector(
     .w_rt_addr_5(w_rt_5),
     .w_dalu_op(r_dalu_op),
     .w_dimm_op(r_dimm_op),
+    .w_djump_op(r_djump_op),
     .w_dshift_op(r_dshift_op),
     .w_dmem_op(r_dmem_op),
     .w_dwrite_op(r_dwrite_op),
@@ -304,14 +309,17 @@ hazard_detection_ctrlr hazard_detector(
     .w_malu_op(r_malu_op),
     .w_mimm_op(r_mimm_op),
     .w_mmem_op(r_mmem_op),
+    .w_mjump_op(r_mjump_op),
     .w_mwrite_op(r_mwrite_op),
     .w_wb_regfile_addr_5(w_reg_file_daddr_5),
+    .w_reg_file_en(w_reg_file_wen),
     .w_stall(w_stall),
     .w_wm_rt_bypass(w_wm_rt_bypass),
     .w_we_rs_bypass(w_we_rs_bypass),
     .w_we_rt_bypass(w_we_rt_bypass),
     .w_me_rs_bypass(w_me_rs_bypass),
-    .w_me_rt_bypass(w_me_rt_bypass)
+    .w_me_rt_bypass(w_me_rt_bypass),
+    .w_wm_jump_bypass(w_wm_jump_bypass)
 );
 
 mux_421 #(1) stall_generator (.w_input00_x(1'b0), .w_input01_x(1'b1), .w_input10_x((w_stall | r_ebranch_op & r_ealu_br_condition | r_ejump_op)), .w_input11_x((w_stall | r_ebranch_op & r_ealu_br_condition | r_ejump_op)), .w_out_x(w_dreg_reset), .w_ctrl_2(decode_stage_ctrl_reg_reset));
@@ -473,11 +481,13 @@ branch_ctrlr branch_ctrl(
     .w_pc_32(input_r_PC),
     .w_alu_imm_32(r_ealu_imm_sgn_ext_32),
     .w_br_imm_26(r_ebr_imm_26),
-    .w_reg_pc_32(r_ers_data_32),
+    .w_reg_pc_32(w_jump_reg_val_32),
     .w_pc_out_32(PC),
     .w_manual_addressing(manual_addressing),
     .w_pc_advanced_out_32(w_advanced_pc_32)
 );
+
+mux_221 #(32) reg_jump_mux_reg_32(.w_input0_x(r_ers_data_32), .w_input1_x(w_reg_file_dval_32), .w_out_x(w_jump_reg_val_32), .w_ctrl(w_wm_jump_bypass));
 
 //write_back -> register file input wiring
 reg_file_waddr_ctrlr wb_wadder_ctrlr (
