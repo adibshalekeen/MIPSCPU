@@ -117,6 +117,12 @@ always @(*) begin
                         w_output_x = w_input1_x - w_input2_x;
                         w_output_condition = 0;
                         end
+                `MUL:
+                        begin
+                        long_temp_signed = temp_signedi1 * temp_signedi2;
+                        w_output_x = long_temp_signed[31:0];
+                        w_output_condition = 0;
+                        end
                 `SPECIAL_MULT:
                         begin
                         long_temp_signed = temp_signedi1 * temp_signedi2;

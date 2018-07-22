@@ -207,7 +207,7 @@ initial begin
     $dumpvars(0, instr_mem_input_mux);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/Swap.x", read_instrs);
+    $readmemh("mips-benchmarks/Fact.x", read_instrs);
     instr_mem_rw = 0;
     #100000 $finish;
 end

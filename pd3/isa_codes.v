@@ -56,7 +56,7 @@
 //{HI, LO} <- rs x rt
 `define SPECIAL_MULT 6'b011000
 `define SPECIAL_MULTU 6'b011001
-
+`define MUL 6'b011100
 //{HI, LO} <- rs / rt
 `define SPECIAL_DIV 6'b011010
 `define SPECIAL_DIVU 6'b011011
