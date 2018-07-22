@@ -25,13 +25,14 @@ assign input_r_PC = r_PC;
 reg MANUAL_PC_CTRL = 1;
 reg [31:0] r_PC;
 reg instr_reg_reset = 1;
+wire w_dmem_en, w_dmem_wr_en;
 
 //instruction memory signals
 wire [31:0] instr_mem_addr;
 reg [31:0] instr_mem_data_in;
 wire [31:0] instr_mem_data_out;
 reg instr_mem_rw, instr_mem_enable = 1;
-
+wire [31:0] w_d_mem_addr_32, w_d_mem_d_32;
 //fetch signals
 wire [31:0] r_fpc;
 wire [31:0] r_instr_reg_out_32;
@@ -211,7 +212,7 @@ initial begin
     $dumpvars(0, instr_mem_input_mux);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/SwapShift.x", read_instrs);
+    $readmemh("mips-benchmarks/CheckVowel.x", read_instrs);
     instr_mem_rw = 0;
     #100000 $finish;
 end
@@ -268,15 +269,20 @@ ALU #(32) alu (
 );
 
 data_mem d_mem(
-    .w_data_in_32(w_dmem_data_in_32),
-    .w_addr_32(r_ealu_out_32),
-    .w_write_op(r_ewrite_op),
+    .w_data_in_32(w_d_mem_d_32),
+    .w_addr_32(w_d_mem_addr_32),
+    .w_write_op(w_dmem_wr_en),
     .w_byte_op(r_ebyte_op),
-    .w_en(r_emem_op),
+    .w_en(w_dmem_en),
     .clock(clock),
     .w_data_out_32(w_dmem_data_out_32),
     .w_data_out_8(w_dmem_data_out_8)
 );
+
+mux_221 #(32) d_mem_addr_in(.w_input0_x(r_ealu_out_32), .w_input1_x(instr_mem_addr), .w_out_x(w_d_mem_addr_32), .w_ctrl(manual_addressing));
+mux_221 #(32) d_mem_data_in(.w_input0_x(w_dmem_data_in_32), .w_input1_x(instr_mem_data_in), .w_out_x(w_d_mem_d_32), .w_ctrl(manual_addressing));
+assign w_dmem_en = r_emem_op | manual_addressing;
+assign w_dmem_wr_en = r_ewrite_op | manual_addressing;
 
 hazard_detection_ctrlr hazard_detector(
     .clock(clock),
