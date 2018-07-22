@@ -17,7 +17,7 @@ input wire [31:0] w_data_in_32;
 output wire [31:0] w_data_out_32;
 output wire [7:0] w_data_out_8;
 
-assign w_data_out_8 = memory_block[w_translated_waddr];
+assign w_data_out_8 = memory_block[w_translated_waddr][7:0];
 assign w_data_out_32 = {memory_block[w_translated_waddr], memory_block[w_translated_waddr + 1], memory_block[w_translated_waddr + 2], memory_block[w_translated_waddr + 3]};
 
 wire [31:0] w_translated_waddr;
@@ -27,15 +27,18 @@ always @(posedge clock) begin
     if(w_en && w_write_op)
     begin
         if(w_byte_op)
+        begin
             memory_block[w_translated_waddr] = w_data_in_32[7:0];
+            //$display("SB asssssssssssssaddr: %h data: %h", w_translated_waddr, w_data_in_32);
+        end
         else
             begin
                 memory_block[w_translated_waddr + 3] = w_data_in_32[7:0];
                 memory_block[w_translated_waddr + 2] = w_data_in_32[15:8];
                 memory_block[w_translated_waddr + 1] = w_data_in_32[23:16];
                 memory_block[w_translated_waddr] = w_data_in_32[31:24];
+                $display("SW addr: %h data: %h",w_translated_waddr, w_data_in_32);
             end
-    $display("Memory addr: %d data: %d",w_translated_waddr, w_data_in_32);
     end
 end
 

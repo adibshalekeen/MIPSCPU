@@ -521,6 +521,7 @@ reg_file_wdata_ctrlr wb_wdata_ctrlr(
 mux_221 #(32) dmem_ert_wb_mux(.w_input0_x(r_ert_data_32), .w_input1_x(w_reg_file_dval_32), .w_out_x(w_dmem_data_in_32), .w_ctrl(w_wm_rt_bypass));
 
 sgn_extension_unit #(8) wb_in_sgn_ext_unit (.w_input_x(r_mdmem_data_8), .w_output_32(w_sgn_ext_mdmem_data_8));
+
 mux_221 #(5) reg_file_waddr_rd_rt(.w_input0_x(w_reg_file_waddr), .w_input1_x(r_mrt_5), .w_out_x(w_reg_file_daddr_5), .w_ctrl(w_reg_file_waddr_ctrl));
 mux_221 #(5) reg_file_jump_rd_ra(.w_input0_x(r_mrd_5), .w_input1_x(5'b11111), .w_out_x(w_reg_file_waddr), .w_ctrl(r_mjump_op & r_mimm_op)); 
 mux_421 #(32) reg_file_wdata_mem_imm(.w_input00_x(r_mdmem_data_32), .w_input01_x(w_sgn_ext_mdmem_data_8), .w_input10_x({r_malu_imm_16, 16'b0}), .w_input11_x(w_reg_file_wdata), .w_out_x(w_reg_file_dval_32), .w_ctrl_2(w_reg_file_wdata_ctrl));

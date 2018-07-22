@@ -40,7 +40,6 @@ always @(*) begin
                 case(w_op_code_6)   
                 `BEQ:
                         begin
-                        $display("EQ!: %h 1: %h 2: %h", BEQ, w_input1_x, w_input2_x);
                         w_output_x = 32'bX;
                         w_output_condition = BEQ;
                         end
