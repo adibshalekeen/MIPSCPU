@@ -207,7 +207,7 @@ initial begin
     $dumpvars(0, instr_mem_input_mux);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
-    $readmemh("mips-benchmarks/SumArray.x", read_instrs);
+    $readmemh("mips-benchmarks/BubbleSort.x", read_instrs);
     instr_mem_rw = 0;
     #100000 $finish;
 end
@@ -280,11 +280,13 @@ hazard_detection_ctrlr hazard_detector(
     .w_imm_op(w_imm_op),
     .w_jump_op(w_jump_op),
     .w_mem_op(w_mem_op),
+    .w_shift_op(w_shift_op),
     .w_write_op(w_write_op),
     .w_rs_addr_5(w_rs_5),
     .w_rt_addr_5(w_rt_5),
     .w_dalu_op(r_dalu_op),
     .w_dimm_op(r_dimm_op),
+    .w_dshift_op(r_dshift_op),
     .w_dmem_op(r_dmem_op),
     .w_dwrite_op(r_dwrite_op),
     .w_drs_addr_5(r_drs_5),
@@ -293,6 +295,7 @@ hazard_detection_ctrlr hazard_detector(
     .w_ealu_op(r_ealu_op),
     .w_eimm_op(r_eimm_op),
     .w_emem_op(r_emem_op),
+    .w_eshift_op(r_eshift_op),
     .w_ejump_op(r_ejump_op),
     .w_ewrite_op(r_ewrite_op),
     .w_ers_addr_5(r_ers_5),
