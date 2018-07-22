@@ -20,7 +20,7 @@ begin
     for (k=0; k<32; k=k+1)
     begin
         if(k==29)
-            reg_file[k] = 32'h00008000;
+            reg_file[k] = 32'h80028000;
         else
             reg_file[k] = k;
         //$display("Register: reg_file%h", reg_file[k]);
