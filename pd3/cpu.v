@@ -204,6 +204,7 @@ initial begin
     $dumpvars(0, branch_ctrl);
     $dumpvars (0, instr_mem_input_mux);
     $dumpvars (0, instruction_memory);
+    $dumpvars(0, instr_mem_input_mux);
     $dumpvars(0, dpc_reg_32);
     $dumpvars(1, CPU);
     $readmemh("mips-benchmarks/SumArray.x", read_instrs);
@@ -292,6 +293,7 @@ hazard_detection_ctrlr hazard_detector(
     .w_ealu_op(r_ealu_op),
     .w_eimm_op(r_eimm_op),
     .w_emem_op(r_emem_op),
+    .w_ejump_op(r_ejump_op),
     .w_ewrite_op(r_ewrite_op),
     .w_ers_addr_5(r_ers_5),
     .w_ert_addr_5(r_ert_5),
@@ -470,6 +472,7 @@ branch_ctrlr branch_ctrl(
     .w_br_imm_26(r_ebr_imm_26),
     .w_reg_pc_32(r_ers_data_32),
     .w_pc_out_32(PC),
+    .w_manual_addressing(manual_addressing),
     .w_pc_advanced_out_32(w_advanced_pc_32)
 );
 
@@ -506,7 +509,7 @@ mux_221 #(32) reg_file_jump_malu_pc(.w_input0_x(r_malu_out_32), .w_input1_x(r_wp
 
 assign instr_mem_addr_mux_ctrl = {(w_stall | (r_ebranch_op & r_ealu_br_condition) | r_ejump_op), manual_addressing};
 //// INSTRUCTION MEMORY INPUT METHOD IS SKETCHY AS FUCK, ASK ME BEFORE CHANGING IT 
-mux_421 #(32) instr_mem_input_mux (.w_input00_x(r_PC), .w_input01_x(MANUAL_PC), .w_input10_x(w_advanced_pc_32), .w_input11_x(w_advanced_pc_32), .w_out_x(instr_mem_addr), .w_ctrl_2(instr_mem_addr_mux_ctrl));
+mux_421 #(32) instr_mem_input_mux (.w_input00_x(r_PC), .w_input01_x(MANUAL_PC), .w_input10_x(w_advanced_pc_32), .w_input11_x(MANUAL_PC), .w_out_x(instr_mem_addr), .w_ctrl_2(instr_mem_addr_mux_ctrl));
 
 //memory population loop
 always @(posedge clock) begin

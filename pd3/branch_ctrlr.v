@@ -11,9 +11,11 @@ module branch_ctrlr(
     w_br_imm_26,
     w_reg_pc_32,
     w_pc_out_32,
+    w_manual_addressing,
     w_pc_advanced_out_32
 );
 input wire w_branch_op, w_imm_op, w_success, w_jump_op, w_stall;
+input wire w_manual_addressing;
 input wire [31:0] w_dpc_in_32, w_epc_in_32, w_pc_32;
 input wire [31:0] w_alu_imm_32, w_reg_pc_32;
 input wire [25
@@ -24,17 +26,17 @@ reg [31:0] branch_delay_slot;
 
 always @(*) begin
     branch_delay_slot = w_epc_in_32 + 4;
-    if(w_stall)
+    if(w_stall & ~w_manual_addressing)
         begin
             w_pc_out_32 = w_dpc_in_32 + 4;
             w_pc_advanced_out_32 = w_dpc_in_32;
         end
-    else if(w_branch_op & w_success)
+    else if(w_branch_op & w_success & ~w_manual_addressing)
         begin
         w_pc_advanced_out_32 = branch_delay_slot + w_alu_imm_32;
         w_pc_out_32 = branch_delay_slot + w_alu_imm_32 + 4;
         end
-    else if (w_jump_op)
+    else if (w_jump_op & ~w_manual_addressing)
         begin
             if(w_imm_op)
             begin

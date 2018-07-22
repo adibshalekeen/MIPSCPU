@@ -17,6 +17,7 @@ module hazard_detection_ctrlr(
     w_ealu_op,
     w_eimm_op,
     w_emem_op,
+    w_ejump_op,
     w_ewrite_op,
     w_ers_addr_5,
     w_ert_addr_5,
@@ -39,7 +40,7 @@ input wire [4:0] w_rs_addr_5, w_rt_addr_5;
 input wire w_dalu_op, w_dimm_op, w_dmem_op, w_dwrite_op;
 input wire [4:0] w_drs_addr_5, w_drt_addr_5, w_drd_addr_5;
 
-input wire w_ealu_op, w_eimm_op, w_emem_op, w_ewrite_op;
+input wire w_ealu_op, w_eimm_op, w_emem_op, w_ejump_op, w_ewrite_op;
 input wire [4:0] w_ers_addr_5, w_ert_addr_5, w_erd_addr_5;
 
 input wire w_malu_op, w_mimm_op, w_mmem_op, w_mwrite_op;
@@ -55,8 +56,44 @@ always @(*)begin
     //load-use stall for alu instructions (str can bypass)
     if((w_dmem_op & ~w_dwrite_op) & ((w_rs_addr_5 === w_drt_addr_5) | ((w_rt_addr_5 === w_drt_addr_5) & ~(w_mem_op & w_write_op))))
         w_stall = 1;
-    else if (((w_rs_addr_5 === w_wb_regfile_addr_5) & ((w_alu_op | w_jump_op | w_mem_op) & ~w_imm_op)) | ((w_rt_addr_5 === w_wb_regfile_addr_5) & ~(w_jump_op & w_imm_op)))
-        w_stall = 1;
+    else if ((w_alu_op | w_mem_op | w_jump_op) & ~w_imm_op)
+        begin
+            if(w_rs_addr_5 === w_erd_addr_5 | w_rt_addr_5 === w_erd_addr_5)
+                begin
+                if((w_ealu_op | w_emem_op | w_ejump_op) & ~w_eimm_op)
+                w_stall = 1;
+                else
+                w_stall = 0;
+                end
+            else if (w_rs_addr_5 === w_ert_addr_5 | w_rt_addr_5 === w_ert_addr_5)
+                begin
+                if((w_ealu_op | (w_emem_op & ~w_ewrite_op)) & ~w_eimm_op)
+                w_stall = 1;
+                else
+                w_stall = 0;
+                end
+            else
+                w_stall = 0;
+        end
+    else if ((w_alu_op | w_mem_op) & w_imm_op)
+        begin
+            if(w_rs_addr_5 === w_erd_addr_5)
+                begin
+                if((w_ealu_op | w_emem_op | w_ejump_op) & ~w_eimm_op)
+                w_stall = 1;
+                else
+                w_stall = 0;
+                end
+            else if (w_rs_addr_5 === w_ert_addr_5)
+                begin
+                if((w_ealu_op | (w_emem_op & ~w_ewrite_op)) & w_eimm_op)
+                w_stall = 1;
+                else
+                w_stall = 0;
+                end
+            else
+                w_stall = 0;
+        end
     else
         w_stall = 0;
 end
