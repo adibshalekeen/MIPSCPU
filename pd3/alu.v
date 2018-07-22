@@ -142,8 +142,9 @@ always @(*) begin
                 `SPECIAL_DIV:
                         begin
                         long_temp_signed = temp_signedi1 / temp_signedi2;
-                        HI = long_temp_signed[(2*WIDTH - 1):WIDTH];
-                        LO = long_temp_signed[(WIDTH - 1):0];
+                        HI = long_temp_signed[31:0];
+                        long_temp_signed = temp_signedi1 % temp_signedi2;
+                        LO = long_temp_signed[31:0];
                         w_output_x = 32'bX;
                         w_output_condition = 0;
                         end
