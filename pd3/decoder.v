@@ -185,6 +185,19 @@ always @(*) begin
             w_nop = 0;
             w_op_type_6 = op_code;    
         end
+        `ANDI:
+            w_alu_op = 1;
+            w_unsigned_op = 0;
+            w_imm_op = 1;
+            w_byte_op = 0;
+            w_shift_op = 0;
+            w_mem_op = 0;
+            w_write_op = 0;
+            w_branch_op = 0;
+            w_jump_op = 0;
+            w_reg_jump_op = 0;
+            w_nop = 0;
+            w_op_type_6 = op_code;   
         `ADDIU, `SLTI, `SLTIU, `ORI, `XORI:
         begin
             w_alu_op = 1;

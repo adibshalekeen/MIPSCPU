@@ -43,6 +43,8 @@
 
 `define REGIMM 6'b000001
 
+`define ANDI 6'b001100
+
 //
 /******************************
         function codes

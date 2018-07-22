@@ -205,7 +205,7 @@ always @(*) begin
                         w_output_x = !(w_input1_x | w_input2_x); 
                         w_output_condition = 0;
                         end
-                `SPECIAL_AND:
+                `SPECIAL_AND, `ANDI:
                         begin
                         w_output_x = w_input1_x & w_input2_x;
                         w_output_condition = 0;
