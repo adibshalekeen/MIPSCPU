@@ -86,10 +86,6 @@ always @(*)begin
             else
                 w_stall = 0;
         end
-    else if ((w_drs_addr_5 === w_wb_regfile_addr_5) & w_reg_file_en & w_dimm_op)
-        w_stall = 1;
-    else if ((w_drt_addr_5 === w_wb_regfile_addr_5) & w_reg_file_en & (~w_dimm_op | w_dshift_op))
-        w_stall = 1;
     else
         w_stall = 0;
 end
@@ -161,7 +157,7 @@ always @(*) begin
         w_we_rt_bypass = 0;
     end
 
-    if(w_emem_op & ~wb_stage_str)
+    if((w_emem_op) & ~wb_stage_str)
     begin
         if(w_ert_addr_5 === w_wb_regfile_addr_5)
             w_wm_rt_bypass = 1;

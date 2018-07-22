@@ -66,7 +66,7 @@
 `define SPECIAL_MFHI 6'b010000
 //rd <- LO
 `define SPECIAL_MFLO 6'b010010
-
+`define SPECIAL_TEQ 6'b110100
 //rd <- rs < rt
 `define SPECIAL_SLT 6'b101010
 `define SPECIAL_SLTU 6'b101011 

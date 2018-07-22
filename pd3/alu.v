@@ -141,10 +141,10 @@ always @(*) begin
                 `SPECIAL_DIV:
                         begin
                         long_temp_signed = temp_signedi1 / temp_signedi2;
-                        HI = long_temp_signed[31:0];
-                        long_temp_signed = temp_signedi1 % temp_signedi2;
                         LO = long_temp_signed[31:0];
-                        w_output_x = 32'bX;
+                        long_temp_signed = temp_signedi1 % temp_signedi2;
+                        HI = long_temp_signed[31:0];
+                        w_output_x = 32'b0;
                         w_output_condition = 0;
                         end
                 `SPECIAL_DIVU:
@@ -175,6 +175,11 @@ always @(*) begin
                         w_output_x = w_input1_x < w_input2_x;
                         w_output_condition = 0;
                         end
+                `SPECIAL_TEQ:
+                        begin
+                        w_output_x = 32'h0;
+                        w_output_condition = 0;
+                        end
                 `SPECIAL_SLL, `SPECIAL_SLLV:
                         begin
                         w_output_x = temp_signedi1 << w_input2_x;
@@ -187,7 +192,7 @@ always @(*) begin
                         end
                 `SPECIAL_SRA, `SPECIAL_SRAV:
                         begin
-                        w_output_x = temp_signedi1 <<< w_input2_x;
+                        w_output_x = temp_signedi1 >>> w_input2_x;
                         w_output_condition = 0;
                         end
                 `SPECIAL_OR, `ORI:
