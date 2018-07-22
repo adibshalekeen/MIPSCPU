@@ -197,7 +197,7 @@ always @(*) begin
         w_we_rt_bypass = 0;
     end
 
-    if(~wb_stage_str)
+    if(w_emem_op & ~wb_stage_str)
     begin
         if(w_ert_addr_5 === w_wb_regfile_addr_5)
             w_wm_rt_bypass = 1;
@@ -215,7 +215,7 @@ always @(*) begin
         end
 
     if (w_me_rt_bypass & w_we_rt_bypass)
-            w_we_rt_bypass = 0;
+        w_we_rt_bypass = 0;
     
     if (w_me_rs_bypass & w_we_rs_bypass)
         w_we_rs_bypass = 0;
